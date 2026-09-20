@@ -1,7 +1,6 @@
 package entities.enums;
 
-public enum FornecedorStatus {
-	
+public enum FornecedorStatus {	
 	ATIVO,
 	INATIVO,
 	BLOQUEADO;	
