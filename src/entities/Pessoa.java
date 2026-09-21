@@ -13,8 +13,7 @@ public class Pessoa {
 	private String site;
 	private String observacao;
 	
-	public Pessoa() {
-		
+	public Pessoa() {		
 	}
 
 	public Pessoa(String nome, Character tipo, String segmento, String email, LocalDate cadastro, String site, String observacao) {		
