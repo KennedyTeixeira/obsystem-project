@@ -25,14 +25,14 @@ public class Venda {
 		this.emissao = emissao;
 		this.previsao = previsao;		
 		this.statusVenda = statusVenda;
-	}	
-
-		public Venda(Cliente cliente) {
-			this.cliente = cliente;
-			this.emissao = LocalDate.now();
-			this.previsao = LocalDate.now();
-			this.statusVenda = VendaStatus.ORCAMENTO;
-		}
+	}
+	
+	public Venda(Cliente cliente) {
+		this.cliente = cliente;
+		this.emissao = LocalDate.now();
+		this.previsao = LocalDate.now();
+		this.statusVenda = VendaStatus.ORCAMENTO;
+	}		
 
 	public Integer getId() {
 		return id;
