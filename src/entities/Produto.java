@@ -1,7 +1,6 @@
 package entities;
 
 import java.math.BigDecimal;
-
 import entities.enums.ProdutoEstoque;
 import entities.enums.ProdutoStatus;
 import entities.enums.ProdutoTipo;
@@ -9,8 +8,8 @@ import entities.enums.ProdutoTipo;
 public class Produto {
 	
 	private Integer id;
-	private String nome;
-	private String codigo;
+	private String nomeProduto;
+	private String codigoProduto;
 	private BigDecimal precoCusto = BigDecimal.ZERO;
 	private BigDecimal precoVenda = BigDecimal.ZERO;
 	private BigDecimal estoqueMinimo = BigDecimal.ZERO;
@@ -33,12 +32,12 @@ public class Produto {
 	public Produto() {		
 	}
 
-	public Produto(String nome, String codigo, BigDecimal precoCusto, BigDecimal precoVenda, BigDecimal estoqueMinimo,
+	public Produto(String nomeProduto, String codigoProduto, BigDecimal precoCusto, BigDecimal precoVenda, BigDecimal estoqueMinimo,
 			BigDecimal estoqueMaximo, BigDecimal estoqueReservado, BigDecimal estoqueAtual, BigDecimal estoqueDisponivel,
 			ProdutoTipo tipoProduto, String unidadeMedida, String categoria, String subcategoria, String modelo,
 			Double milimetro, Integer medida, String marca, ProdutoEstoque controlaEstoque, Character fracionar) {		
-		this.nome = nome;
-		this.codigo = codigo;
+		this.nomeProduto = nomeProduto;
+		this.codigoProduto = codigoProduto;
 		this.precoCusto = precoCusto;
 		this.precoVenda = precoVenda;
 		this.estoqueMinimo = estoqueMinimo;
@@ -58,10 +57,10 @@ public class Produto {
 		this.fracionar = fracionar;
 	}
 
-	public Produto(String nome, String codigo, BigDecimal precoCusto, BigDecimal precoVenda, ProdutoTipo tipoProduto,
+	public Produto(String nomeProduto, String codigoProduto, BigDecimal precoCusto, BigDecimal precoVenda, ProdutoTipo tipoProduto,
 			String unidadeMedida, String categoria, String subcategoria, String modelo, ProdutoEstoque controlaEstoque, Character fracionar) {		
-		this.nome = nome;
-		this.codigo = codigo;
+		this.nomeProduto = nomeProduto;
+		this.codigoProduto = codigoProduto;
 		this.precoCusto = precoCusto;
 		this.precoVenda = precoVenda;		
 		this.tipoProduto = tipoProduto;
@@ -81,20 +80,20 @@ public class Produto {
 		this.id = id;
 	}
 
-	public String getNome() {
-		return nome;
+	public String getNomeProduto() {
+		return nomeProduto;
 	}
 
-	public void setNome(String nome) {
-		this.nome = nome;
+	public void setNomeProduto(String nomeProduto) {
+		this.nomeProduto = nomeProduto;
 	}
 
-	public String getCodigo() {
-		return codigo;
+	public String getCodigoProduto() {
+		return codigoProduto;
 	}
 
-	public void setCodigo(String codigo) {
-		this.codigo = codigo;
+	public void setCodigoProduto(String codigoProduto) {
+		this.codigoProduto = codigoProduto;
 	}
 
 	public BigDecimal getPrecoCusto() {

@@ -57,6 +57,10 @@ public class Venda {
 	public void setEmissao(LocalDate emissao) {
 		this.emissao = emissao;
 	}
+	
+	public List<ItemVenda> getItens() {
+	    return itens;
+	}
 
 	public LocalDate getPrevisao() {
 		return previsao;
