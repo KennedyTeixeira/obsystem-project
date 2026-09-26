@@ -2,25 +2,76 @@ package com.obsystem.entities;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Objects;
+
 import com.obsystem.entities.enums.TipoTitulo;
 import com.obsystem.entities.enums.TituloStatus;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
+@Entity
+@Table(name = "obs_titulo")
 public class Titulo {
 	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id_titulo")
 	private Integer id;
+	
+	@Enumerated(EnumType.STRING)
+	@Column(name = "tp_titulo", length = 20, nullable = false)
 	private TipoTitulo tipo;
+	
+	@Column(name = "ds_titulo", length = 100, nullable = false)
 	private String descricao;
+	
+	@ManyToOne
+	@JoinColumn(name = "id_pessoa", nullable = false)
 	private Pessoa pessoa;
+	
+	@ManyToOne
+	@JoinColumn(name = "id_venda")
 	private Venda venda;
+	
+	@ManyToOne
+	@JoinColumn(name = "id_compra")
 	private Compra compra;
+	
+	@ManyToOne
+	@JoinColumn(name = "id_classificacao")
 	private Classificacao classificacao;
+	
+	@ManyToOne
+	@JoinColumn(name = "id_plano_conta")
 	private PlanoConta planoConta;
+	
+	@ManyToOne
+	@JoinColumn(name = "id_centro_custo")
 	private CentroCusto centroCusto;
+	
+	@Column(name = "dt_emissao", nullable = false)
 	private LocalDate emissao;
+	
+	@Column(name = "dt_vencimento", nullable = false)
 	private LocalDate vencimento;
+	
+	@Column(name = "dt_pagamento")
 	private LocalDate pagamento;
+	
+	@Column(name = "vl_total_titulo", precision = 12, scale = 2, nullable = false)
 	private BigDecimal valorTotal = BigDecimal.ZERO;
+	
+	@Enumerated(EnumType.STRING)
+	@Column(name = "st_titulo", length = 20, nullable = false)
 	private TituloStatus status;
 	
 	public Titulo() {		
@@ -42,6 +93,30 @@ public class Titulo {
 		this.pagamento = pagamento;
 		this.valorTotal = valorTotal;
 		this.status = status;
+	}
+
+	// Título que nasce de uma Venda (Contas a Receber):
+	public Titulo(Venda venda, LocalDate vencimento) {
+	    this.tipo = TipoTitulo.RECEITA;
+	    this.venda = venda;
+	    this.pessoa = venda.getCliente().getPessoa(); // Puxa a pessoa do cliente da venda
+	    this.valorTotal = venda.getTotalVenda();       // Puxa o total da venda
+	    this.emissao = venda.getEmissao();
+	    this.vencimento = vencimento;
+	    this.status = TituloStatus.PENDENTE;
+	    this.descricao = "Venda nº " + venda.getId();
+	}
+	
+	// Título que nasce de uma Compra (Contas a Pagar):
+	public Titulo(Compra compra, LocalDate vencimento) {
+	    this.tipo = TipoTitulo.DESPESA;
+	    this.compra = compra;
+	    this.pessoa = compra.getFornecedor().getPessoa(); // Puxa a pessoa do fornecedor
+	    this.valorTotal = compra.getTotalCompra();        // Puxa o total da compra
+	    this.emissao = compra.getEmissao();
+	    this.vencimento = vencimento;
+	    this.status = TituloStatus.PENDENTE;
+	    this.descricao = "Compra nº " + compra.getId();
 	}
 
 	public Integer getId() {
@@ -171,29 +246,21 @@ public class Titulo {
 	public void cancelar() {
 	    this.status = TituloStatus.CANCELADO;
 	}
-	
-	// Título que nasce de uma Venda (Contas a Receber):
-	public Titulo(Venda venda, LocalDate vencimento) {
-	    this.tipo = TipoTitulo.RECEITA;
-	    this.venda = venda;
-	    this.pessoa = venda.getCliente().getPessoa(); // Já puxa o cliente da venda!
-	    this.valorTotal = venda.getTotalVenda();       // Já puxa o valor da venda!
-	    this.emissao = venda.getEmissao();
-	    this.vencimento = vencimento;
-	    this.status = TituloStatus.PENDENTE;
-	    this.descricao = "Venda nº " + venda.getId();
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
 	}
-	
-	// Título que nasce de uma Compra (Contas a Pagar):
-	public Titulo(Compra compra, LocalDate vencimento) {
-	    this.tipo = TipoTitulo.DESPESA;
-	    this.compra = compra;
-	    this.pessoa = compra.getFornecedor().getPessoa(); // Já puxa o fornecedor!
-	    this.valorTotal = compra.getTotalCompra();        // Já puxa o valor da compra!
-	    this.emissao = compra.getEmissao();
-	    this.vencimento = vencimento;
-	    this.status = TituloStatus.PENDENTE;
-	    this.descricao = "Compra nº " + compra.getId();
-	}
-		
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Titulo other = (Titulo) obj;
+		return Objects.equals(id, other.id);
+	}	
 }
