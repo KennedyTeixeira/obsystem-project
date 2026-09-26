@@ -31,3 +31,12 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# =======================================================
+# SEGURANÇA: CREDENCIAIS LOCAIS DO BANCO DE DADOS
+# =======================================================
+# O arquivo abaixo contem senhas reais e configuracoes confidenciais
+# do Supabase da maquina local. NUNCA deve ser commitado no GitHub!
+
+**/application-local.properties
+application-local.properties
