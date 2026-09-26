@@ -1,19 +1,58 @@
 package com.obsystem.entities;
 
 import java.math.BigDecimal;
+import java.util.Objects;
+
 import com.obsystem.entities.enums.ItemStatus;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "obs_item_compra")
 public class ItemCompra {
 	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id_item_compra")
 	private Integer id;
+
+	@ManyToOne
+	@JoinColumn(name = "id_compra", nullable = false)
 	private Compra compra;
+
+	@ManyToOne
+	@JoinColumn(name = "id_produto", nullable = false)
 	private Produto produto;
+
+	@Column(name = "nr_item", nullable = false)
 	private Integer numeroItem;
+
+	@Column(name = "qt_item", precision = 12, scale = 3, nullable = false)
 	private BigDecimal quantidadeItem;
+
+	@Column(name = "vl_unitario", precision = 12, scale = 2, nullable = false)
 	private BigDecimal precoUnitario;
+
+	@Column(name = "vl_desconto", precision = 12, scale = 2, nullable = false)
 	private BigDecimal valorDesconto = BigDecimal.ZERO;
+
+	@Column(name = "vl_despesa", precision = 12, scale = 2, nullable = false)
 	private BigDecimal valorDespesa = BigDecimal.ZERO;
+
+	@Column(name = "vl_total", precision = 12, scale = 2, nullable = false)
 	private BigDecimal valorTotal = BigDecimal.ZERO;
+
+	@Enumerated(EnumType.STRING)
+	@Column(name = "st_item", length = 20, nullable = false)
 	private ItemStatus statusItem = ItemStatus.INCLUSO;
 	
 	public ItemCompra() {		
@@ -127,5 +166,22 @@ public class ItemCompra {
 	                                            .add(this.valorDespesa);
 	    }
 	    return this.valorTotal;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ItemCompra other = (ItemCompra) obj;
+		return Objects.equals(id, other.id);
 	}
 }
