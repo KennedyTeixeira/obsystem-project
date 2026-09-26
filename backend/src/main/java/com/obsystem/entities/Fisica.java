@@ -1,17 +1,41 @@
 package com.obsystem.entities;
 
 import java.time.LocalDate;
+
 import com.obsystem.entities.enums.Genero;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.PrimaryKeyJoinColumn;
+import jakarta.persistence.Table;
 
+@Entity
+@Table(name = "obs_fisica")
+@PrimaryKeyJoinColumn(name = "id_pessoa")
 public class Fisica extends Pessoa {
 	
+	@Column(name = "nr_cpf", length = 14, unique = true)
 	private String cpf;
+	
+	@Column(name = "nr_rg", length = 20)
 	private String rg;
+	
+	@Column(name = "sg_uf_rg", length = 2)
 	private String uf;
+	
+	@Column(name = "dt_emissao_rg")
 	private LocalDate emissao;
+	
+	@Column(name = "ds_emissor_rg", length = 20)
 	private String emissor;
+	
+	@Column(name = "ds_naturalidade", length = 50)
 	private String naturalidade;
+	
+	@Enumerated(EnumType.STRING)
+	@Column(name = "tp_genero", length = 15)
 	private Genero genero;
 	
 	public Fisica() {
@@ -85,6 +109,5 @@ public class Fisica extends Pessoa {
 
 	public void setGenero(Genero genero) {
 		this.genero = genero;
-	}
-		
+	}		
 }
