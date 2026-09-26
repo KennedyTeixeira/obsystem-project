@@ -1,33 +1,91 @@
 package com.obsystem.entities;
 
 import java.math.BigDecimal;
+import java.util.Objects;
 
 import com.obsystem.entities.enums.ProdutoEstoque;
 import com.obsystem.entities.enums.ProdutoStatus;
 import com.obsystem.entities.enums.ProdutoTipo;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
+@Entity
+@Table(name = "obs_produto")
 public class Produto {
 	
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "id_produto")
 	private Integer id;
+	
+	@Column(name = "nm_produto", length = 100, nullable = false)
 	private String nomeProduto;
+	
+	@Column(name = "cd_produto", length = 50, unique = true)
 	private String codigoProduto;
+	
+	@Column(name = "vl_custo", precision = 12, scale = 2, nullable = false)
 	private BigDecimal precoCusto = BigDecimal.ZERO;
+	
+	@Column(name = "vl_venda", precision = 12, scale = 2, nullable = false)
 	private BigDecimal precoVenda = BigDecimal.ZERO;
+	
+	@Column(name = "qt_estoque_minimo", precision = 12, scale = 3, nullable = false)
 	private BigDecimal estoqueMinimo = BigDecimal.ZERO;
+	
+	@Column(name = "qt_estoque_maximo", precision = 12, scale = 3, nullable = false)
 	private BigDecimal estoqueMaximo = BigDecimal.ZERO;
+	
+	@Column(name = "qt_estoque_reservado", precision = 12, scale = 3, nullable = false)
 	private BigDecimal estoqueReservado = BigDecimal.ZERO;
+	
+	@Column(name = "qt_estoque_atual", precision = 12, scale = 3, nullable = false)
 	private BigDecimal estoqueAtual = BigDecimal.ZERO;
+	
+	@Column(name = "qt_estoque_disponivel", precision = 12, scale = 3, nullable = false)
 	private BigDecimal estoqueDisponivel = BigDecimal.ZERO;
+	
+	@Enumerated(EnumType.STRING)
+	@Column(name = "tp_produto", length = 30, nullable = false)
 	private ProdutoTipo tipoProduto;
+	
+	@Column(name = "sg_unidade_medida", length = 10)
 	private String unidadeMedida;
+	
+	@Column(name = "ds_categoria", length = 50)
 	private String categoria;
+	
+	@Column(name = "ds_subcategoria", length = 50)
 	private String subcategoria;
+	
+	@Column(name = "ds_modelo", length = 50)
 	private String modelo;
+	
+	@Column(name = "nr_milimetro")
 	private Double milimetro;
+	
+	@Column(name = "nr_medida")
 	private Integer medida;
+	
+	@Column(name = "ds_marca", length = 50)
 	private String marca;
+	
+	@Enumerated(EnumType.STRING)
+	@Column(name = "st_controla_estoque", length = 10)
 	private ProdutoEstoque controlaEstoque;
+	
+	@Enumerated(EnumType.STRING)
+	@Column(name = "st_produto", length = 20, nullable = false)
 	private ProdutoStatus statusProduto = ProdutoStatus.ATIVO;
+	
+	@Column(name = "st_fracionar", length = 1)
 	private Character fracionar;
 	
 	public Produto() {		
@@ -243,5 +301,22 @@ public class Produto {
 
 	public BigDecimal calcularEstoqueDisponivel() {
 	    return this.estoqueAtual.subtract(this.estoqueReservado);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(id);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Produto other = (Produto) obj;
+		return Objects.equals(id, other.id);
 	}
 }
