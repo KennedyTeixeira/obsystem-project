@@ -23,4 +23,6 @@ public interface FornecedorRepository extends JpaRepository<Fornecedor, Integer>
 
     @Query("SELECT f FROM Fornecedor f JOIN f.pessoa p WHERE LOWER(p.nome) LIKE LOWER(CONCAT('%', :search, '%'))")
     List<Fornecedor> searchByNome(@Param("search") String search);
+
+    long countByStatus(FornecedorStatus status);
 }

@@ -1,5 +1,7 @@
 package com.obsystem.repositories;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -25,4 +27,12 @@ public interface VendaRepository extends JpaRepository<Venda, Integer> {
 
     @Query("SELECT v FROM Venda v ORDER BY v.emissao DESC, v.id DESC")
     List<Venda> findAllOrderByEmissaoDesc();
+
+    List<Venda> findTop5ByOrderByEmissaoDescIdDesc();
+
+    @Query("SELECT COALESCE(SUM(v.totalVenda), 0) FROM Venda v WHERE v.emissao BETWEEN :inicio AND :fim")
+    BigDecimal sumTotalByPeriodo(@Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
+
+    @Query("SELECT COUNT(v) FROM Venda v WHERE v.emissao BETWEEN :inicio AND :fim")
+    Long countByPeriodo(@Param("inicio") LocalDate inicio, @Param("fim") LocalDate fim);
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.obsystem.entities.Produto;
@@ -23,4 +24,10 @@ public interface ProdutoRepository extends JpaRepository<Produto, Integer> {
     List<Produto> findByNomeProdutoContainingIgnoreCaseOrCodigoProdutoContainingIgnoreCase(String nome, String codigo);
     
     List<Produto> findByStatusProduto(ProdutoStatus status);
+
+    @Query("SELECT COUNT(p) FROM Produto p WHERE p.controlaEstoque = 'SIM' AND p.statusProduto = 'ATIVO' AND p.estoqueAtual <= p.estoqueMinimo")
+    Long countProdutosEstoqueBaixo();
+
+    @Query("SELECT p FROM Produto p WHERE p.controlaEstoque = 'SIM' AND p.statusProduto = 'ATIVO' AND p.estoqueAtual <= p.estoqueMinimo ORDER BY p.estoqueAtual ASC")
+    List<Produto> findProdutosEstoqueBaixo();
 }

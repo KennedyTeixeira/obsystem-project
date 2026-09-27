@@ -62,4 +62,9 @@ public interface TituloRepository extends JpaRepository<Titulo, Integer> {
 
     @Query("SELECT COALESCE(SUM(t.valorTotal), 0) FROM Titulo t WHERE t.status = 'PENDENTE' AND t.vencimento < :hoje")
     BigDecimal sumVencidos(@Param("hoje") LocalDate hoje);
+
+    @Query("SELECT COUNT(t) FROM Titulo t WHERE t.status = 'PENDENTE' AND t.vencimento < :hoje")
+    Long countVencidos(@Param("hoje") LocalDate hoje);
+
+    List<Titulo> findTop5ByStatusOrderByVencimentoAscIdDesc(TituloStatus status);
 }

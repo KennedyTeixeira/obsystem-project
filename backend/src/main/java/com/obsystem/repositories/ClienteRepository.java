@@ -23,4 +23,6 @@ public interface ClienteRepository extends JpaRepository<Cliente, Integer> {
 
     @Query("SELECT c FROM Cliente c JOIN c.pessoa p WHERE LOWER(p.nome) LIKE LOWER(CONCAT('%', :search, '%'))")
     List<Cliente> searchByNome(@Param("search") String search);
+
+    long countByStatus(ClienteStatus status);
 }
