@@ -8,9 +8,25 @@ import {
   X,
   AlertTriangle,
   Loader2,
+  Tag,
+  FolderTree,
+  GitBranch,
+  Shield,
+  Box,
+  Award,
+  Ruler,
+  Maximize2,
+  Disc,
+  DollarSign,
+  ChevronRight,
+  ChevronLeft,
 } from 'lucide-react';
 import produtoService from '../../services/produtoService';
+import produtoApoioService from '../../services/produtoApoioService';
 import type { ProdutoDTO, ProdutoStatus, ProdutoTipo } from '../../types/produto';
+import type { ProdutoApoioCatalogoDTO, TipoEntidadeApoio } from '../../types/produtoApoio';
+import ProdutoApoioDrawer from './components/ProdutoApoioDrawer';
+import ReajustePrecosDrawer from './components/ReajustePrecosDrawer';
 import styles from './ProdutosPage.module.css';
 
 export const ProdutosPage: React.FC = () => {
@@ -18,6 +34,12 @@ export const ProdutosPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ProdutoStatus | ''>('');
+
+  // Drawers de Apoio e Ações (Estilo Bling ERP)
+  const [drawerTipo, setDrawerTipo] = useState<TipoEntidadeApoio | null>(null);
+  const [reajusteOpen, setReajusteOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [catalogo, setCatalogo] = useState<ProdutoApoioCatalogoDTO | null>(null);
 
   // Modal State
   const [modalOpen, setModalOpen] = useState(false);
@@ -43,6 +65,7 @@ export const ProdutosPage: React.FC = () => {
     fracionar: 'N',
   });
 
+
   const searchInputId = useId();
   const statusFilterId = useId();
   const formCodigoId = useId();
@@ -58,6 +81,15 @@ export const ProdutosPage: React.FC = () => {
   const formEstoqueAtualId = useId();
   const formControlaEstoqueId = useId();
   const formStatusId = useId();
+
+  const carregarCatalogo = async () => {
+    try {
+      const data = await produtoApoioService.obterCatalogo();
+      setCatalogo(data);
+    } catch (err) {
+      console.error('Erro ao carregar catálogo de apoio:', err);
+    }
+  };
 
   const carregarProdutos = async () => {
     try {
@@ -77,6 +109,11 @@ export const ProdutosPage: React.FC = () => {
   useEffect(() => {
     carregarProdutos();
   }, [search, statusFilter]);
+
+  useEffect(() => {
+    carregarCatalogo();
+  }, []);
+
 
   const abrirModalNovo = () => {
     setEditingId(null);
@@ -182,16 +219,21 @@ export const ProdutosPage: React.FC = () => {
           <h1>Produtos & Estoque</h1>
           <p>Catálogo centralizado de mercadorias, preços e regras de estoque</p>
         </div>
-        <button
-          type="button"
-          onClick={abrirModalNovo}
-          className={styles.btnPrimary}
-        >
-          <Plus size={18} /> Novo Produto
-        </button>
+        <div className={styles.headerActions}>
+          <button
+            type="button"
+            onClick={abrirModalNovo}
+            className={styles.btnNovoProdutoHeader}
+          >
+            <Plus size={18} /> Novo Produto
+          </button>
+        </div>
       </div>
 
-      {/* Filtros */}
+      {/* Layout com Painel Principal e Menu Lateral Direito (Bling ERP) */}
+      <div className={styles.pageLayout}>
+        <div className={styles.mainContent}>
+          {/* Filtros */}
       <div className={styles.filterCard}>
         <div className={styles.searchBox}>
           <Search size={18} color="var(--text-muted)" />
@@ -325,6 +367,182 @@ export const ProdutosPage: React.FC = () => {
           </div>
         )}
       </div>
+    </div>
+
+    {/* Menu Lateral à Direita (Bling ERP) */}
+    <aside
+      className={`${styles.rightSidebar} ${
+        sidebarCollapsed ? styles.rightSidebarCollapsed : ''
+      }`}
+    >
+      {!sidebarCollapsed ? (
+        <>
+          {/* Ferramentas de apoio */}
+          <div className={styles.sidebarSection}>
+            <span className={styles.sidebarSectionTitle}>Ferramentas de apoio</span>
+            <div className={styles.sidebarNavList}>
+              <button
+                type="button"
+                className={styles.sidebarNavItem}
+                onClick={() => setDrawerTipo('tipo_produto')}
+              >
+                <span className={styles.sidebarItemIcon}>
+                  <Tag size={16} />
+                </span>
+                <span>Tipo de Produtos</span>
+              </button>
+              <button
+                type="button"
+                className={styles.sidebarNavItem}
+                onClick={() => setDrawerTipo('categoria')}
+              >
+                <span className={styles.sidebarItemIcon}>
+                  <FolderTree size={16} />
+                </span>
+                <span>Categoria</span>
+              </button>
+              <button
+                type="button"
+                className={styles.sidebarNavItem}
+                onClick={() => setDrawerTipo('subcategoria')}
+              >
+                <span className={styles.sidebarItemIcon}>
+                  <GitBranch size={16} />
+                </span>
+                <span>SubCategoria</span>
+              </button>
+              <button
+                type="button"
+                className={styles.sidebarNavItem}
+                onClick={() => setDrawerTipo('classe')}
+              >
+                <span className={styles.sidebarItemIcon}>
+                  <Shield size={16} />
+                </span>
+                <span>Classe</span>
+              </button>
+              <button
+                type="button"
+                className={styles.sidebarNavItem}
+                onClick={() => setDrawerTipo('modelo')}
+              >
+                <span className={styles.sidebarItemIcon}>
+                  <Box size={16} />
+                </span>
+                <span>Modelo</span>
+              </button>
+              <button
+                type="button"
+                className={styles.sidebarNavItem}
+                onClick={() => setDrawerTipo('marca')}
+              >
+                <span className={styles.sidebarItemIcon}>
+                  <Award size={16} />
+                </span>
+                <span>Marca</span>
+              </button>
+              <button
+                type="button"
+                className={styles.sidebarNavItem}
+                onClick={() => setDrawerTipo('unidade_medida')}
+              >
+                <span className={styles.sidebarItemIcon}>
+                  <Ruler size={16} />
+                </span>
+                <span>Unidade de Medida</span>
+              </button>
+              <button
+                type="button"
+                className={styles.sidebarNavItem}
+                onClick={() => setDrawerTipo('medida')}
+              >
+                <span className={styles.sidebarItemIcon}>
+                  <Maximize2 size={16} />
+                </span>
+                <span>Medida</span>
+              </button>
+              <button
+                type="button"
+                className={styles.sidebarNavItem}
+                onClick={() => setDrawerTipo('milimetro')}
+              >
+                <span className={styles.sidebarItemIcon}>
+                  <Disc size={16} />
+                </span>
+                <span>Milímetro</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Mais ações */}
+          <div className={styles.sidebarSection}>
+            <span className={styles.sidebarSectionTitle}>Mais Ações</span>
+            <div className={styles.sidebarNavList}>
+              <button
+                type="button"
+                className={styles.sidebarNavItem}
+                onClick={() => setReajusteOpen(true)}
+              >
+                <span className={styles.sidebarItemIcon}>
+                  <DollarSign size={16} />
+                </span>
+                <span>Reajuste de Preços</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Informações */}
+          <div className={styles.sidebarSection}>
+            <span className={styles.sidebarSectionTitle}>Informações</span>
+            <div className={styles.sidebarInfoCard}>
+              <div className={styles.sidebarInfoItem}>
+                <span className={styles.sidebarInfoLabel}>Total de Produtos:</span>
+                <span className={styles.sidebarInfoValue}>{produtos.length}</span>
+              </div>
+              <div className={styles.sidebarInfoItem}>
+                <span className={styles.sidebarInfoLabel}>Ativos:</span>
+                <span className={`${styles.sidebarInfoValue} ${styles.sidebarInfoHighlight}`}>
+                  {produtos.filter((p) => p.statusProduto === 'ATIVO').length}
+                </span>
+              </div>
+              <div className={styles.sidebarInfoItem}>
+                <span className={styles.sidebarInfoLabel}>Estoque Baixo:</span>
+                <span className={styles.sidebarInfoValue}>
+                  {
+                    produtos.filter(
+                      (p) =>
+                        (p.estoqueAtual ?? 0) <= (p.estoqueMinimo ?? 0) &&
+                        (p.estoqueMinimo ?? 0) > 0
+                    ).length
+                  }
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            className={styles.btnSidebarToggle}
+            onClick={() => setSidebarCollapsed(true)}
+            title="Recolher menu lateral"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </>
+      ) : (
+        <>
+          <button
+            type="button"
+            className={styles.btnSidebarToggle}
+            onClick={() => setSidebarCollapsed(false)}
+            title="Expandir menu lateral"
+          >
+            <ChevronLeft size={18} />
+          </button>
+        </>
+      )}
+    </aside>
+  </div>
 
       {/* Modal de Cadastro / Edição */}
       {modalOpen && (
@@ -392,10 +610,16 @@ export const ProdutosPage: React.FC = () => {
                       <input
                         id={formUnidadeId}
                         type="text"
+                        list="unidades-list"
                         placeholder="Ex: UN, M2, KG, CX"
                         value={formData.unidadeMedida || ''}
                         onChange={(e) => setFormData({ ...formData, unidadeMedida: e.target.value })}
                       />
+                      <datalist id="unidades-list">
+                        {catalogo?.unidadesMedida.map((u) => (
+                          <option key={u.id} value={u.sigla} label={u.descricao} />
+                        ))}
+                      </datalist>
                     </div>
                   </div>
 
@@ -405,20 +629,32 @@ export const ProdutosPage: React.FC = () => {
                       <input
                         id={formCategoriaId}
                         type="text"
+                        list="categorias-list"
                         placeholder="Ex: Vidros, Chapas, Ferragens"
                         value={formData.categoria || ''}
                         onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
                       />
+                      <datalist id="categorias-list">
+                        {catalogo?.categorias.map((c) => (
+                          <option key={c.id} value={c.descricao} />
+                        ))}
+                      </datalist>
                     </div>
                     <div className={styles.formGroup}>
                       <label htmlFor={formMarcaId}>Marca</label>
                       <input
                         id={formMarcaId}
                         type="text"
+                        list="marcas-list"
                         placeholder="Ex: Vivix, Cebrace, Blindex"
                         value={formData.marca || ''}
                         onChange={(e) => setFormData({ ...formData, marca: e.target.value })}
                       />
+                      <datalist id="marcas-list">
+                        {catalogo?.marcas.map((m) => (
+                          <option key={m.id} value={m.descricao} />
+                        ))}
+                      </datalist>
                     </div>
                   </div>
                 </div>
@@ -547,7 +783,27 @@ export const ProdutosPage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Drawer Deslizante da Direita para Esquerda (Cadastros de Apoio) */}
+      <ProdutoApoioDrawer
+        isOpen={drawerTipo !== null}
+        onClose={() => setDrawerTipo(null)}
+        tipoEntidade={drawerTipo}
+        onCatalogoUpdated={() => {
+          carregarCatalogo();
+          carregarProdutos();
+        }}
+      />
+
+      {/* Drawer Deslizante Inferior (Bottom Sheet - Reajuste de Preços) */}
+      <ReajustePrecosDrawer
+        isOpen={reajusteOpen}
+        onClose={() => setReajusteOpen(false)}
+        produtos={produtos}
+        onPrecosAtualizados={carregarProdutos}
+      />
     </div>
+
   );
 };
 

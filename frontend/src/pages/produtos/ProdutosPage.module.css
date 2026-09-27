@@ -1,27 +1,57 @@
 .container {
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
+  width: 100%;
 }
 
 .header {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
+  align-items: flex-end;
+  gap: 1.5rem;
+  width: 100%;
 }
 
 .titleArea h1 {
-  font-size: 1.75rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: var(--text-main);
-  margin-bottom: 0.25rem;
+  margin-bottom: 0.2rem;
 }
 
 .titleArea p {
   color: var(--text-muted);
+  font-size: 0.86rem;
+}
+
+.headerActions {
+  width: 260px;
+  flex-shrink: 0;
+  display: flex;
+}
+
+.btnNovoProdutoHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
   font-size: 0.92rem;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  transition: background-color var(--transition-fast), transform 0.1s;
+}
+
+.btnNovoProdutoHeader:hover {
+  background-color: var(--color-primary-hover);
+  transform: translateY(-1px);
 }
 
 .btnPrimary {
@@ -47,7 +77,7 @@
   background-color: var(--bg-surface);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  padding: 1rem 1.25rem;
+  padding: 0.85rem 1.15rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -63,10 +93,10 @@
   background-color: var(--bg-subtle);
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
-  padding: 0.55rem 0.85rem;
+  padding: 0.5rem 0.85rem;
   flex: 1;
   min-width: 250px;
-  max-width: 450px;
+  max-width: 480px;
 }
 
 .searchBox input {
@@ -75,6 +105,7 @@
   outline: none;
   width: 100%;
   color: var(--text-main);
+  font-size: 0.875rem;
 }
 
 .searchBox input::placeholder {
@@ -88,13 +119,14 @@
 }
 
 .statusFilter select {
-  padding: 0.55rem 1rem;
+  padding: 0.5rem 0.85rem;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-light);
   background-color: var(--bg-surface);
   color: var(--text-main);
   outline: none;
   cursor: pointer;
+  font-size: 0.85rem;
 }
 
 .tableCard {
@@ -103,84 +135,142 @@
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
+  width: 100%;
 }
 
 .tableResponsive {
   overflow-x: auto;
+  width: 100%;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  font-size: 0.9rem;
+  font-size: 0.825rem;
 }
 
 .table th {
   background-color: var(--bg-subtle);
-  padding: 0.85rem 1rem;
-  font-weight: 600;
+  padding: 0.75rem 0.85rem;
+  font-weight: 700;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
   color: var(--text-muted);
   border-bottom: 1px solid var(--border-light);
   white-space: nowrap;
 }
 
 .table td {
-  padding: 0.9rem 1rem;
+  padding: 0.7rem 0.85rem;
   border-bottom: 1px solid var(--border-light);
   color: var(--text-main);
   vertical-align: middle;
 }
 
 .table tr:hover td {
-  background-color: #f8fafc;
+  background-color: rgba(255, 255, 255, 0.02);
 }
 
-.badgeSku {
-  font-family: ui-monospace, monospace;
-  font-size: 0.82rem;
-  background-color: #f1f5f9;
-  color: #334155;
+.skuBadge {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.75rem;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
   padding: 0.2rem 0.45rem;
   border-radius: var(--radius-sm);
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--border-light);
   font-weight: 600;
+  white-space: nowrap;
+  display: inline-block;
 }
 
-.badgeMargin {
-  background-color: var(--color-success-light);
-  color: var(--color-success-text);
-  padding: 0.2rem 0.5rem;
-  border-radius: var(--radius-full);
+.productName {
   font-weight: 600;
+  color: var(--text-main);
+  font-size: 0.835rem;
+  line-height: 1.35;
+  min-width: 200px;
+}
+
+.productSub {
+  font-size: 0.725rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.categoryCell {
   font-size: 0.8rem;
+  color: var(--text-main);
+  white-space: nowrap;
 }
 
-.badgeAlertCritico {
-  background-color: var(--color-danger-light);
-  color: var(--color-danger-text);
-  padding: 0.2rem 0.55rem;
-  border-radius: var(--radius-full);
-  font-weight: 600;
-  font-size: 0.78rem;
+.brandTag {
+  color: var(--text-muted);
+  font-size: 0.775rem;
 }
 
-.badgeAlertNormal {
-  background-color: #ecfdf5;
-  color: #065f46;
-  padding: 0.2rem 0.55rem;
+.marginTag {
+  background-color: rgba(16, 185, 129, 0.12);
+  color: var(--color-success);
+  padding: 0.18rem 0.45rem;
   border-radius: var(--radius-full);
-  font-weight: 600;
-  font-size: 0.78rem;
+  font-weight: 700;
+  font-size: 0.75rem;
+  white-space: nowrap;
+  display: inline-block;
 }
 
-.badgeAlertExcessivo {
-  background-color: var(--color-warning-light);
-  color: var(--color-warning-text);
-  padding: 0.2rem 0.55rem;
-  border-radius: var(--radius-full);
+.stockCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  white-space: nowrap;
+}
+
+.stockMain {
   font-weight: 600;
-  font-size: 0.78rem;
+  color: var(--text-main);
+  font-size: 0.82rem;
+}
+
+.stockSub {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.badgeDanger {
+  background-color: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  padding: 0.18rem 0.48rem;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 0.725rem;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.badgeWarning {
+  background-color: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+  padding: 0.18rem 0.48rem;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 0.725rem;
+  white-space: nowrap;
+  display: inline-block;
+}
+
+.badgeSuccess {
+  background-color: rgba(16, 185, 129, 0.12);
+  color: #10b981;
+  padding: 0.18rem 0.48rem;
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: 0.725rem;
+  white-space: nowrap;
+  display: inline-block;
 }
 
 .badgeStatusAtivo {
@@ -189,7 +279,8 @@
   gap: 0.35rem;
   color: var(--color-success);
   font-weight: 600;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
 }
 
 .badgeStatusInativo {
@@ -198,24 +289,32 @@
   gap: 0.35rem;
   color: var(--text-subtle);
   font-weight: 600;
-  font-size: 0.82rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
 }
 
 .actionsCell {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  gap: 0.4rem;
+  white-space: nowrap;
 }
 
 .actionBtn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
+  width: 28px;
+  height: 28px;
   border-radius: var(--radius-sm);
   color: var(--text-muted);
   transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.actionBtn:hover {
+  background-color: var(--bg-subtle);
+  color: var(--text-main);
 }
 
 .actionBtn:hover {
@@ -377,3 +476,172 @@
 .btnSecondary:hover {
   background-color: var(--bg-subtle);
 }
+
+/* ==========================================================================
+   LAYOUT COM MENU LATERAL À DIREITA (ESTILO BLING ERP)
+   ========================================================================== */
+.pageLayout {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  position: relative;
+  width: 100%;
+}
+
+.mainContent {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.rightSidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  transition: width 0.3s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s ease;
+  position: sticky;
+  top: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.rightSidebarCollapsed {
+  width: 54px;
+  padding: 1rem 0.4rem;
+}
+
+.btnSidebarPrimary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  border: none;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+  transition: background-color var(--transition-fast), transform 0.1s;
+  width: 100%;
+}
+
+.btnSidebarPrimary:hover {
+  background-color: var(--color-primary-hover);
+  transform: translateY(-1px);
+}
+
+.sidebarSection {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sidebarSectionTitle {
+  font-size: 0.725rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-subtle);
+  margin-bottom: 0.25rem;
+  padding-left: 0.5rem;
+}
+
+.sidebarNavList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.sidebarNavItem {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: var(--radius-md);
+  color: var(--text-main);
+  font-size: 0.85rem;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: background-color var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebarNavItem:hover {
+  background-color: var(--bg-subtle);
+  color: var(--color-primary);
+}
+
+.sidebarItemIcon {
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+}
+
+.sidebarNavItem:hover .sidebarItemIcon {
+  color: var(--color-primary);
+}
+
+.sidebarInfoCard {
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebarInfoItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.82rem;
+}
+
+.sidebarInfoLabel {
+  color: var(--text-muted);
+}
+
+.sidebarInfoValue {
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.sidebarInfoHighlight {
+  color: var(--color-primary);
+}
+
+.btnSidebarToggle {
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-muted);
+  border-radius: var(--radius-md);
+  padding: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-top: auto;
+  width: 100%;
+}
+
+.btnSidebarToggle:hover {
+  background-color: var(--bg-subtle);
+  color: var(--text-main);
+  border-color: var(--border-focus);
+}
+

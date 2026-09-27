@@ -1,0 +1,134 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.controlGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  min-width: 180px;
+}
+
+.label {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--text-muted, #94a3b8);
+}
+
+.select,
+.input {
+  background-color: var(--background, #0f172a);
+  border: 1px solid var(--border, #334155);
+  border-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  color: var(--text, #f8fafc);
+  font-size: 0.875rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.select:focus,
+.input:focus {
+  border-color: var(--primary, #10b981);
+}
+
+.valueInputGroup {
+  display: flex;
+  align-items: center;
+}
+
+.valueInput {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+  width: 110px;
+}
+
+.unitToggle {
+  background-color: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border, #334155);
+  border-left: none;
+  border-top-right-radius: 6px;
+  border-bottom-right-radius: 6px;
+  padding: 0.6rem 0.8rem;
+  color: var(--primary, #10b981);
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.radioArea {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  background-color: rgba(15, 23, 42, 0.4);
+  padding: 0.85rem 1.25rem;
+  border-radius: 8px;
+  border: 1px solid var(--border, #334155);
+}
+
+.radioTitle {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-muted, #94a3b8);
+  margin-bottom: 0.2rem;
+}
+
+.radioOption {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--text, #f8fafc);
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.btnPrimary {
+  background-color: var(--primary, #10b981);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.65rem 1.4rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.btnPrimary:hover {
+  background-color: #059669;
+}
+
+.btnSecondary {
+  background: transparent;
+  border: 1px solid var(--border, #334155);
+  color: var(--text, #f8fafc);
+  border-radius: 6px;
+  padding: 0.65rem 1.2rem;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnSecondary:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+}
