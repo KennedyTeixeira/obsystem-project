@@ -51,9 +51,11 @@ public class CompraService {
         boolean hasSearch = search != null && !search.trim().isEmpty();
         boolean hasStatus = status != null;
 
-        if (hasSearch || hasStatus) {
-            String s = hasSearch ? search.trim() : null;
-            list = compraRepository.searchCompras(s, status);
+        if (hasSearch) {
+            String s = "%" + search.trim().toLowerCase() + "%";
+            list = compraRepository.searchComprasWithText(s, status);
+        } else if (hasStatus) {
+            list = compraRepository.findByStatusCompraOrderByEmissaoDesc(status);
         } else {
             list = compraRepository.findAllOrderByEmissaoDesc();
         }
@@ -142,9 +144,13 @@ public class CompraService {
         compra.setTotalCompra(totalCalculado);
         compra = compraRepository.save(compra);
 
-        // Se status finalizado em PAGAMENTO e solicitou gerar contas a pagar
-        if (compra.getStatusCompra() == CompraStatus.PAGAMENTO && Boolean.TRUE.equals(dto.getGerarTituloFinanceiro())) {
-            gerarTituloContasPagar(compra);
+        // Se status confirmado (PEDIDO, RECEBIMENTO ou PAGAMENTO) e solicitou gerar contas a pagar
+        if (compra.getStatusCompra() == CompraStatus.PEDIDO
+                || compra.getStatusCompra() == CompraStatus.RECEBIMENTO
+                || compra.getStatusCompra() == CompraStatus.PAGAMENTO) {
+            if (Boolean.TRUE.equals(dto.getGerarTituloFinanceiro())) {
+                gerarTituloContasPagar(compra);
+            }
         }
 
         return new CompraDTO(compra);
@@ -169,9 +175,11 @@ public class CompraService {
             }
         }
 
-        // Se atinge estágio PAGAMENTO, gera Contas a Pagar
-        if (novoStatus == CompraStatus.PAGAMENTO) {
-            gerarTituloContasPagar(compra);
+        // Se atinge estágio PEDIDO ou superior, assegura geração do Contas a Pagar
+        if (novoStatus == CompraStatus.PEDIDO || novoStatus == CompraStatus.RECEBIMENTO || novoStatus == CompraStatus.PAGAMENTO) {
+            if (tituloRepository.findByCompra(compra).isEmpty()) {
+                gerarTituloContasPagar(compra);
+            }
         }
 
         compra.setStatusCompra(novoStatus);

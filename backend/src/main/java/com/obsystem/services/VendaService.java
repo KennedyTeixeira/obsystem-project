@@ -155,9 +155,13 @@ public class VendaService {
         venda.setTotalVenda(totalCalculado);
         venda = vendaRepository.save(venda);
 
-        // Se finalizado imediatamente e solicitou gerar título, cria Contas a Receber
-        if (venda.getStatusVenda() == VendaStatus.FINALIZADO && Boolean.TRUE.equals(dto.getGerarTituloFinanceiro())) {
-            gerarTituloContasReceber(venda);
+        // Se confirmado (ABERTO, SEPARACAO ou FINALIZADO) e solicitou gerar título, cria Contas a Receber
+        if (venda.getStatusVenda() == VendaStatus.ABERTO
+                || venda.getStatusVenda() == VendaStatus.SEPARACAO
+                || venda.getStatusVenda() == VendaStatus.FINALIZADO) {
+            if (Boolean.TRUE.equals(dto.getGerarTituloFinanceiro())) {
+                gerarTituloContasReceber(venda);
+            }
         }
 
         return new VendaDTO(venda);
@@ -173,7 +177,7 @@ public class VendaService {
             return new VendaDTO(venda);
         }
 
-        // Transição para FINALIZADO
+        // Transição para FINALIZADO: baixa física definitiva do estoque
         if (novoStatus == VendaStatus.FINALIZADO) {
             for (ItemVenda item : venda.getItens()) {
                 Produto p = item.getProduto();
@@ -188,7 +192,13 @@ public class VendaService {
                     produtoRepository.save(p);
                 }
             }
-            gerarTituloContasReceber(venda);
+        }
+
+        // Se atinge estágio ABERTO ou superior, assegura geração do Contas a Receber
+        if (novoStatus == VendaStatus.ABERTO || novoStatus == VendaStatus.SEPARACAO || novoStatus == VendaStatus.FINALIZADO) {
+            if (tituloRepository.findByVenda(venda).isEmpty()) {
+                gerarTituloContasReceber(venda);
+            }
         }
 
         venda.setStatusVenda(novoStatus);

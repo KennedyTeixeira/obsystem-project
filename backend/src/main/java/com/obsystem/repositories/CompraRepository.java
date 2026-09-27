@@ -18,6 +18,9 @@ public interface CompraRepository extends JpaRepository<Compra, Integer> {
 
     List<Compra> findByStatusCompra(CompraStatus status);
 
-    @Query("SELECT c FROM Compra c WHERE (:search IS NULL OR LOWER(c.fornecedor.pessoa.nome) LIKE LOWER(CONCAT('%', :search, '%'))) AND (:status IS NULL OR c.statusCompra = :status) ORDER BY c.emissao DESC, c.id DESC")
-    List<Compra> searchCompras(@Param("search") String search, @Param("status") CompraStatus status);
+    @Query("SELECT c FROM Compra c WHERE LOWER(c.fornecedor.pessoa.nome) LIKE :search AND (:status IS NULL OR c.statusCompra = :status) ORDER BY c.emissao DESC, c.id DESC")
+    List<Compra> searchComprasWithText(@Param("search") String search, @Param("status") CompraStatus status);
+
+    @Query("SELECT c FROM Compra c WHERE c.statusCompra = :status ORDER BY c.emissao DESC, c.id DESC")
+    List<Compra> findByStatusCompraOrderByEmissaoDesc(@Param("status") CompraStatus status);
 }
