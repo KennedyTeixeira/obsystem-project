@@ -27,9 +27,19 @@ public class ProdutoService {
     public List<ProdutoDTO> findAll(String search, ProdutoStatus status) {
         List<Produto> list;
 
-        if (search != null && !search.trim().isEmpty()) {
-            list = repository.findByNomeProdutoContainingIgnoreCase(search.trim());
-        } else if (status != null) {
+        boolean hasSearch = search != null && !search.trim().isEmpty();
+        boolean hasStatus = status != null;
+
+        if (hasSearch && hasStatus) {
+            String s = search.trim();
+            list = repository.findByNomeProdutoContainingIgnoreCaseOrCodigoProdutoContainingIgnoreCase(s, s)
+                    .stream()
+                    .filter(p -> p.getStatusProduto() == status)
+                    .collect(Collectors.toList());
+        } else if (hasSearch) {
+            String s = search.trim();
+            list = repository.findByNomeProdutoContainingIgnoreCaseOrCodigoProdutoContainingIgnoreCase(s, s);
+        } else if (hasStatus) {
             list = repository.findByStatusProduto(status);
         } else {
             list = repository.findAll();

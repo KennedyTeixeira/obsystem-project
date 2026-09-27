@@ -195,11 +195,11 @@ export const ProdutosPage: React.FC = () => {
       <div className={styles.filterCard}>
         <div className={styles.searchBox}>
           <Search size={18} color="var(--text-muted)" />
-          <label htmlFor={searchInputId} style={{ display: 'none' }}>Buscar por nome do produto...</label>
+          <label htmlFor={searchInputId} style={{ display: 'none' }}>Buscar por nome ou código (SKU)...</label>
           <input
             id={searchInputId}
             type="text"
-            placeholder="Buscar por nome do produto..."
+            placeholder="Buscar por nome ou código (SKU)..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
