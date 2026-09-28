@@ -1,4 +1,4 @@
-# 🏢 OBSystem ERP - Sistema de Gestão Empresarial & Industrial
+# 🏢 OBSYSTEM ERP - Sistema de Gestão Empresarial & Industrial
 
 Sistema Integrado de Gestão Empresarial (ERP) voltado ao setor vidreiro e industrial, com gestão ponta a ponta de catálogo técnico, regras de estoque, compras, vendas, financeiro e interface moderna inspirada nos líderes de mercado.
 
