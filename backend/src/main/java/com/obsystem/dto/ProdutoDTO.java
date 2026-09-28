@@ -20,10 +20,11 @@ public class ProdutoDTO {
     private BigDecimal estoqueReservado;
     private BigDecimal estoqueAtual;
     private BigDecimal estoqueDisponivel;
-    private ProdutoTipo tipoProduto;
+    private String tipoProduto;
     private String unidadeMedida;
     private String categoria;
     private String subcategoria;
+    private String classe;
     private String modelo;
     private Double milimetro;
     private Integer medida;
@@ -50,6 +51,7 @@ public class ProdutoDTO {
         this.unidadeMedida = entity.getUnidadeMedida();
         this.categoria = entity.getCategoria();
         this.subcategoria = entity.getSubcategoria();
+        this.classe = entity.getClasse();
         this.modelo = entity.getModelo();
         this.milimetro = entity.getMilimetro();
         this.medida = entity.getMedida();
@@ -159,12 +161,24 @@ public class ProdutoDTO {
         this.estoqueDisponivel = estoqueDisponivel;
     }
 
-    public ProdutoTipo getTipoProduto() {
+    public String getTipoProduto() {
         return tipoProduto;
     }
 
-    public void setTipoProduto(ProdutoTipo tipoProduto) {
+    public void setTipoProduto(String tipoProduto) {
         this.tipoProduto = tipoProduto;
+    }
+
+    public void setTipoProduto(ProdutoTipo tipoProduto) {
+        this.tipoProduto = tipoProduto != null ? tipoProduto.name() : null;
+    }
+
+    public String getClasse() {
+        return classe;
+    }
+
+    public void setClasse(String classe) {
+        this.classe = classe;
     }
 
     public String getUnidadeMedida() {

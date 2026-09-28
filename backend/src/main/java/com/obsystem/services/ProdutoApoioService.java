@@ -27,6 +27,8 @@ import com.obsystem.entities.SubCategoria;
 import com.obsystem.entities.TipoProduto;
 import com.obsystem.entities.UnidadeMedida;
 import com.obsystem.entities.enums.ProdutoStatus;
+import jakarta.annotation.PostConstruct;
+import org.springframework.jdbc.core.JdbcTemplate;
 import com.obsystem.repositories.CategoriaRepository;
 import com.obsystem.repositories.ClasseRepository;
 import com.obsystem.repositories.MarcaRepository;
@@ -41,7 +43,19 @@ import com.obsystem.repositories.UnidadeMedidaRepository;
 public class ProdutoApoioService {
 
     @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+    @Autowired
     private TipoProdutoRepository tipoProdutoRepository;
+
+    @PostConstruct
+    public void ajustarConstraints() {
+        try {
+            jdbcTemplate.execute("ALTER TABLE obs_produto DROP CONSTRAINT IF EXISTS obs_produto_tp_produto_check");
+        } catch (Exception e) {
+            // Ignora se não existir
+        }
+    }
 
     @Autowired
     private UnidadeMedidaRepository unidadeMedidaRepository;

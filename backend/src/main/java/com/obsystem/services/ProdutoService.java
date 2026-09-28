@@ -177,10 +177,11 @@ public class ProdutoService {
         entity.setEstoqueMaximo(dto.getEstoqueMaximo() != null ? dto.getEstoqueMaximo() : BigDecimal.ZERO);
         entity.setEstoqueReservado(dto.getEstoqueReservado() != null ? dto.getEstoqueReservado() : BigDecimal.ZERO);
         entity.setEstoqueAtual(dto.getEstoqueAtual() != null ? dto.getEstoqueAtual() : BigDecimal.ZERO);
-        entity.setTipoProduto(dto.getTipoProduto() != null ? dto.getTipoProduto() : ProdutoTipo.PRODUTO);
+        entity.setTipoProduto(dto.getTipoProduto() != null && !dto.getTipoProduto().isBlank() ? dto.getTipoProduto() : "PRODUTO");
         entity.setUnidadeMedida(dto.getUnidadeMedida());
         entity.setCategoria(dto.getCategoria());
         entity.setSubcategoria(dto.getSubcategoria());
+        entity.setClasse(dto.getClasse());
         entity.setModelo(dto.getModelo());
         entity.setMilimetro(dto.getMilimetro());
         entity.setMedida(dto.getMedida());

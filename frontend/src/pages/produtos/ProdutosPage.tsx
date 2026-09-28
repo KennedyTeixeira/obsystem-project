@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useId } from 'react';
+import React, { useEffect, useState, useId, useMemo } from 'react';
 import {
   Package,
   Plus,
@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import produtoService from '../../services/produtoService';
 import produtoApoioService from '../../services/produtoApoioService';
-import type { ProdutoDTO, ProdutoStatus, ProdutoTipo } from '../../types/produto';
+import type { ProdutoDTO, ProdutoStatus } from '../../types/produto';
 import type { ProdutoApoioCatalogoDTO, TipoEntidadeApoio } from '../../types/produtoApoio';
 import ProdutoApoioDrawer from './components/ProdutoApoioDrawer';
 import ReajustePrecosDrawer from './components/ReajustePrecosDrawer';
@@ -52,9 +52,14 @@ export const ProdutosPage: React.FC = () => {
     codigoProduto: '',
     nomeProduto: '',
     tipoProduto: 'PRODUTO',
-    categoria: '',
-    marca: '',
     unidadeMedida: 'UN',
+    categoria: '',
+    subcategoria: '',
+    marca: '',
+    classe: '',
+    modelo: '',
+    milimetro: undefined,
+    medida: undefined,
     precoCusto: 0,
     precoVenda: 0,
     estoqueMinimo: 0,
@@ -65,15 +70,19 @@ export const ProdutosPage: React.FC = () => {
     fracionar: 'N',
   });
 
-
   const searchInputId = useId();
   const statusFilterId = useId();
   const formCodigoId = useId();
   const formNomeId = useId();
   const formTipoProdutoId = useId();
-  const formCategoriaId = useId();
-  const formMarcaId = useId();
   const formUnidadeId = useId();
+  const formCategoriaId = useId();
+  const formSubcategoriaId = useId();
+  const formMarcaId = useId();
+  const formClasseId = useId();
+  const formModeloId = useId();
+  const formMilimetroId = useId();
+  const formMedidaId = useId();
   const formPrecoCustoId = useId();
   const formPrecoVendaId = useId();
   const formEstoqueMinId = useId();
@@ -114,17 +123,39 @@ export const ProdutosPage: React.FC = () => {
     carregarCatalogo();
   }, []);
 
+  // Subcategorias filtradas dinamicamente pela categoria selecionada
+  const subcategoriasDisponiveis = useMemo(() => {
+    if (!catalogo) return [];
+    if (!formData.categoria) return catalogo.subcategorias;
+    const catEncontrada = catalogo.categorias.find(
+      (c) => c.descricao.toLowerCase() === formData.categoria?.toLowerCase()
+    );
+    if (!catEncontrada) return catalogo.subcategorias;
+    const filtradas = catalogo.subcategorias.filter(
+      (s) =>
+        s.idCategoria === catEncontrada.id ||
+        s.nomeCategoria?.toLowerCase() === formData.categoria?.toLowerCase()
+    );
+    return filtradas.length > 0 ? filtradas : catalogo.subcategorias;
+  }, [catalogo, formData.categoria]);
 
   const abrirModalNovo = () => {
     setEditingId(null);
     setErrorMessage(null);
+    const defaultTipo = catalogo?.tiposProduto[0]?.nome || 'Mercadoria para Revenda';
+    const defaultUnidade = catalogo?.unidadesMedida[0]?.sigla || 'UN';
     setFormData({
       codigoProduto: '',
       nomeProduto: '',
-      tipoProduto: 'PRODUTO',
+      tipoProduto: defaultTipo,
+      unidadeMedida: defaultUnidade,
       categoria: '',
+      subcategoria: '',
       marca: '',
-      unidadeMedida: 'UN',
+      classe: '',
+      modelo: '',
+      milimetro: undefined,
+      medida: undefined,
       precoCusto: 0,
       precoVenda: 0,
       estoqueMinimo: 0,
@@ -143,6 +174,14 @@ export const ProdutosPage: React.FC = () => {
     setFormData({
       ...produto,
       tipoProduto: produto.tipoProduto || 'PRODUTO',
+      unidadeMedida: produto.unidadeMedida || 'UN',
+      categoria: produto.categoria || '',
+      subcategoria: produto.subcategoria || '',
+      classe: produto.classe || '',
+      modelo: produto.modelo || '',
+      marca: produto.marca || '',
+      milimetro: produto.milimetro,
+      medida: produto.medida,
       precoCusto: produto.precoCusto ?? 0,
       precoVenda: produto.precoVenda ?? 0,
       estoqueMinimo: produto.estoqueMinimo ?? 0,
@@ -302,7 +341,10 @@ export const ProdutosPage: React.FC = () => {
                     </td>
                     <td>
                       <span style={{ color: 'var(--text-muted)' }}>
-                        {p.categoria || 'Geral'} {p.marca ? `• ${p.marca}` : ''}
+                        {p.categoria || 'Geral'}
+                        {p.subcategoria ? ` > ${p.subcategoria}` : ''}
+                        {p.marca ? ` • ${p.marca}` : ''}
+                        {p.milimetro ? ` • ${p.milimetro}mm` : ''}
                       </span>
                     </td>
                     <td>{formatarMoeda(p.precoCusto)}</td>
@@ -564,7 +606,7 @@ export const ProdutosPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* Seção 1: Identificação */}
+                {/* Seção 1: Identificação do Produto */}
                 <div>
                   <h3 className={styles.formSectionTitle}>1. Identificação do Produto</h3>
                   <div className={styles.formGrid2}>
@@ -585,7 +627,7 @@ export const ProdutosPage: React.FC = () => {
                         id={formNomeId}
                         type="text"
                         required
-                        placeholder="Ex: Caneca Porcelana Branca"
+                        placeholder="Ex: Vidro Temperado Incolor 8mm"
                         value={formData.nomeProduto}
                         onChange={(e) => setFormData({ ...formData, nomeProduto: e.target.value })}
                       />
@@ -598,70 +640,180 @@ export const ProdutosPage: React.FC = () => {
                       <select
                         id={formTipoProdutoId}
                         value={formData.tipoProduto}
-                        onChange={(e) => setFormData({ ...formData, tipoProduto: e.target.value as ProdutoTipo })}
+                        onChange={(e) => setFormData({ ...formData, tipoProduto: e.target.value })}
+                        required
                       >
-                        <option value="PRODUTO">Produto (Revenda / Acabado)</option>
-                        <option value="INSUMO">Insumo (Matéria-prima)</option>
-                        <option value="SERVICO">Serviço</option>
+                        <option value="">Selecione o tipo de produto...</option>
+                        {catalogo?.tiposProduto.map((t) => (
+                          <option key={t.id} value={t.nome}>
+                            {t.nome}
+                          </option>
+                        ))}
+                        {(!catalogo?.tiposProduto || catalogo.tiposProduto.length === 0) && (
+                          <>
+                            <option value="PRODUTO">Produto (Revenda / Acabado)</option>
+                            <option value="INSUMO">Insumo (Matéria-prima)</option>
+                            <option value="SERVICO">Serviço</option>
+                          </>
+                        )}
                       </select>
                     </div>
                     <div className={styles.formGroup}>
                       <label htmlFor={formUnidadeId}>Unidade de Medida</label>
-                      <input
+                      <select
                         id={formUnidadeId}
-                        type="text"
-                        list="unidades-list"
-                        placeholder="Ex: UN, M2, KG, CX"
                         value={formData.unidadeMedida || ''}
                         onChange={(e) => setFormData({ ...formData, unidadeMedida: e.target.value })}
-                      />
-                      <datalist id="unidades-list">
+                      >
+                        <option value="">Selecione a unidade...</option>
                         {catalogo?.unidadesMedida.map((u) => (
-                          <option key={u.id} value={u.sigla} label={u.descricao} />
+                          <option key={u.id} value={u.sigla}>
+                            {u.sigla} - {u.descricao}
+                          </option>
                         ))}
-                      </datalist>
-                    </div>
-                  </div>
-
-                  <div className={styles.formGrid2} style={{ marginTop: '0.85rem' }}>
-                    <div className={styles.formGroup}>
-                      <label htmlFor={formCategoriaId}>Categoria</label>
-                      <input
-                        id={formCategoriaId}
-                        type="text"
-                        list="categorias-list"
-                        placeholder="Ex: Vidros, Chapas, Ferragens"
-                        value={formData.categoria || ''}
-                        onChange={(e) => setFormData({ ...formData, categoria: e.target.value })}
-                      />
-                      <datalist id="categorias-list">
-                        {catalogo?.categorias.map((c) => (
-                          <option key={c.id} value={c.descricao} />
-                        ))}
-                      </datalist>
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label htmlFor={formMarcaId}>Marca</label>
-                      <input
-                        id={formMarcaId}
-                        type="text"
-                        list="marcas-list"
-                        placeholder="Ex: Vivix, Cebrace, Blindex"
-                        value={formData.marca || ''}
-                        onChange={(e) => setFormData({ ...formData, marca: e.target.value })}
-                      />
-                      <datalist id="marcas-list">
-                        {catalogo?.marcas.map((m) => (
-                          <option key={m.id} value={m.descricao} />
-                        ))}
-                      </datalist>
+                      </select>
                     </div>
                   </div>
                 </div>
 
-                {/* Seção 2: Preços e Margem */}
+                {/* Seção 2: Classificação & Categoria */}
                 <div>
-                  <h3 className={styles.formSectionTitle}>2. Precificação & Lucro Comercial</h3>
+                  <h3 className={styles.formSectionTitle}>2. Classificação & Categorização</h3>
+                  <div className={styles.formGrid2}>
+                    <div className={styles.formGroup}>
+                      <label htmlFor={formCategoriaId}>Categoria</label>
+                      <select
+                        id={formCategoriaId}
+                        value={formData.categoria || ''}
+                        onChange={(e) => {
+                          const cat = e.target.value;
+                          setFormData({ ...formData, categoria: cat, subcategoria: '' });
+                        }}
+                      >
+                        <option value="">Selecione a categoria...</option>
+                        {catalogo?.categorias.map((c) => (
+                          <option key={c.id} value={c.descricao}>
+                            {c.descricao}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label htmlFor={formSubcategoriaId}>Subcategoria</label>
+                      <select
+                        id={formSubcategoriaId}
+                        value={formData.subcategoria || ''}
+                        onChange={(e) => setFormData({ ...formData, subcategoria: e.target.value })}
+                      >
+                        <option value="">Selecione a subcategoria...</option>
+                        {subcategoriasDisponiveis.map((s) => (
+                          <option key={s.id} value={s.descricao}>
+                            {s.descricao} {s.nomeCategoria && !formData.categoria ? `(${s.nomeCategoria})` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className={styles.formGrid3} style={{ marginTop: '0.85rem' }}>
+                    <div className={styles.formGroup}>
+                      <label htmlFor={formMarcaId}>Marca / Fabricante</label>
+                      <select
+                        id={formMarcaId}
+                        value={formData.marca || ''}
+                        onChange={(e) => setFormData({ ...formData, marca: e.target.value })}
+                      >
+                        <option value="">Selecione a marca...</option>
+                        {catalogo?.marcas.map((m) => (
+                          <option key={m.id} value={m.descricao}>
+                            {m.descricao}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label htmlFor={formClasseId}>Classe do Material</label>
+                      <select
+                        id={formClasseId}
+                        value={formData.classe || ''}
+                        onChange={(e) => setFormData({ ...formData, classe: e.target.value })}
+                      >
+                        <option value="">Selecione a classe...</option>
+                        {catalogo?.classes.map((cl) => (
+                          <option key={cl.id} value={cl.descricao}>
+                            {cl.descricao}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label htmlFor={formModeloId}>Modelo Construtivo</label>
+                      <select
+                        id={formModeloId}
+                        value={formData.modelo || ''}
+                        onChange={(e) => setFormData({ ...formData, modelo: e.target.value })}
+                      >
+                        <option value="">Selecione o modelo...</option>
+                        {catalogo?.modelos.map((mo) => (
+                          <option key={mo.id} value={mo.descricao}>
+                            {mo.descricao}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Seção 3: Dimensões & Especificações Técnicas */}
+                <div>
+                  <h3 className={styles.formSectionTitle}>3. Dimensões & Especificações Técnicas</h3>
+                  <div className={styles.formGrid2}>
+                    <div className={styles.formGroup}>
+                      <label htmlFor={formMilimetroId}>Milímetro / Espessura</label>
+                      <select
+                        id={formMilimetroId}
+                        value={formData.milimetro !== undefined && formData.milimetro !== null ? formData.milimetro : ''}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            milimetro: e.target.value ? Number(e.target.value) : undefined,
+                          })
+                        }
+                      >
+                        <option value="">Selecione a espessura...</option>
+                        {catalogo?.milimetros.map((mi) => (
+                          <option key={mi.id} value={mi.espessura}>
+                            {mi.descricao || `${mi.espessura}mm`}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className={styles.formGroup}>
+                      <label htmlFor={formMedidaId}>Medida Padrão</label>
+                      <select
+                        id={formMedidaId}
+                        value={formData.medida !== undefined && formData.medida !== null ? formData.medida : ''}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            medida: e.target.value ? Number(e.target.value) : undefined,
+                          })
+                        }
+                      >
+                        <option value="">Selecione a medida padrão...</option>
+                        {catalogo?.medidas.map((me) => (
+                          <option key={me.id} value={me.id}>
+                            {me.descricao} {me.largura && me.altura ? `(${me.largura} x ${me.altura} mm)` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Seção 4: Preços e Margem */}
+                <div>
+                  <h3 className={styles.formSectionTitle}>4. Precificação & Lucro Comercial</h3>
                   <div className={styles.formGrid3}>
                     <div className={styles.formGroup}>
                       <label htmlFor={formPrecoCustoId}>Preço de Custo (R$)</label>
@@ -705,9 +857,9 @@ export const ProdutosPage: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Seção 3: Estoque */}
+                {/* Seção 5: Estoque */}
                 <div>
-                  <h3 className={styles.formSectionTitle}>3. Parâmetros de Estoque</h3>
+                  <h3 className={styles.formSectionTitle}>5. Parâmetros de Estoque</h3>
                   <div className={styles.formGrid3}>
                     <div className={styles.formGroup}>
                       <label htmlFor={formEstoqueMinId}>Estoque Mínimo</label>

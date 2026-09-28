@@ -52,9 +52,8 @@ public class Produto {
 	@Column(name = "qt_estoque_disponivel", precision = 12, scale = 3, nullable = false)
 	private BigDecimal estoqueDisponivel = BigDecimal.ZERO;
 	
-	@Enumerated(EnumType.STRING)
-	@Column(name = "tp_produto", length = 30, nullable = false)
-	private ProdutoTipo tipoProduto;
+	@Column(name = "tp_produto", length = 50, nullable = false)
+	private String tipoProduto = "PRODUTO";
 	
 	@Column(name = "sg_unidade_medida", length = 10)
 	private String unidadeMedida;
@@ -64,6 +63,9 @@ public class Produto {
 	
 	@Column(name = "ds_subcategoria", length = 50)
 	private String subcategoria;
+
+	@Column(name = "ds_classe", length = 50)
+	private String classe;
 	
 	@Column(name = "ds_modelo", length = 50)
 	private String modelo;
@@ -104,10 +106,36 @@ public class Produto {
 		this.estoqueReservado = estoqueReservado;
 		this.estoqueAtual = estoqueAtual;
 		this.estoqueDisponivel = estoqueDisponivel;
-		this.tipoProduto = tipoProduto;
+		this.tipoProduto = tipoProduto != null ? tipoProduto.name() : "PRODUTO";
 		this.unidadeMedida = unidadeMedida;
 		this.categoria = categoria;
 		this.subcategoria = subcategoria;
+		this.modelo = modelo;
+		this.milimetro = milimetro;
+		this.medida = medida;
+		this.marca = marca;
+		this.controlaEstoque = controlaEstoque;		
+		this.fracionar = fracionar;
+	}
+
+	public Produto(String nomeProduto, String codigoProduto, BigDecimal precoCusto, BigDecimal precoVenda, BigDecimal estoqueMinimo,
+			BigDecimal estoqueMaximo, BigDecimal estoqueReservado, BigDecimal estoqueAtual, BigDecimal estoqueDisponivel,
+			String tipoProduto, String unidadeMedida, String categoria, String subcategoria, String classe, String modelo,
+			Double milimetro, Integer medida, String marca, ProdutoEstoque controlaEstoque, Character fracionar) {		
+		this.nomeProduto = nomeProduto;
+		this.codigoProduto = codigoProduto;
+		this.precoCusto = precoCusto;
+		this.precoVenda = precoVenda;
+		this.estoqueMinimo = estoqueMinimo;
+		this.estoqueMaximo = estoqueMaximo;
+		this.estoqueReservado = estoqueReservado;
+		this.estoqueAtual = estoqueAtual;
+		this.estoqueDisponivel = estoqueDisponivel;
+		this.tipoProduto = tipoProduto != null ? tipoProduto : "PRODUTO";
+		this.unidadeMedida = unidadeMedida;
+		this.categoria = categoria;
+		this.subcategoria = subcategoria;
+		this.classe = classe;
 		this.modelo = modelo;
 		this.milimetro = milimetro;
 		this.medida = medida;
@@ -122,7 +150,7 @@ public class Produto {
 		this.codigoProduto = codigoProduto;
 		this.precoCusto = precoCusto;
 		this.precoVenda = precoVenda;		
-		this.tipoProduto = tipoProduto;
+		this.tipoProduto = tipoProduto != null ? tipoProduto.name() : "PRODUTO";
 		this.unidadeMedida = unidadeMedida;
 		this.categoria = categoria;
 		this.subcategoria = subcategoria;
@@ -211,12 +239,24 @@ public class Produto {
 		this.estoqueDisponivel = estoqueDisponivel;
 	}
 
-	public ProdutoTipo getTipoProduto() {
+	public String getTipoProduto() {
 		return tipoProduto;
 	}
 
-	public void setTipoProduto(ProdutoTipo tipoProduto) {
+	public void setTipoProduto(String tipoProduto) {
 		this.tipoProduto = tipoProduto;
+	}
+
+	public void setTipoProduto(ProdutoTipo tipoProduto) {
+		this.tipoProduto = tipoProduto != null ? tipoProduto.name() : null;
+	}
+
+	public String getClasse() {
+		return classe;
+	}
+
+	public void setClasse(String classe) {
+		this.classe = classe;
 	}
 
 	public String getUnidadeMedida() {

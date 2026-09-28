@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import {
   Plus,
   Trash2,
+  Edit2,
+  Check,
   Loader2,
   Tag,
   FolderTree,
@@ -36,6 +38,7 @@ export const ProdutoApoioDrawer: React.FC<ProdutoApoioDrawerProps> = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [items, setItems] = useState<unknown[]>([]);
   const [categoriasList, setCategoriasList] = useState<CategoriaDTO[]>([]);
 
@@ -49,6 +52,7 @@ export const ProdutoApoioDrawer: React.FC<ProdutoApoioDrawerProps> = ({
   const [altura, setAltura] = useState<number | ''>('');
 
   const limparFormulario = () => {
+    setEditingId(null);
     setDescricao('');
     setNome('');
     setSigla('');
@@ -56,6 +60,29 @@ export const ProdutoApoioDrawer: React.FC<ProdutoApoioDrawerProps> = ({
     setEspessura('');
     setLargura('');
     setAltura('');
+  };
+
+  const handleEditar = (item: any) => {
+    setEditingId(item.id);
+    if (tipoEntidade === 'tipo_produto') {
+      setNome(item.nome || '');
+      setDescricao(item.descricao || '');
+    } else if (tipoEntidade === 'unidade_medida') {
+      setSigla(item.sigla || '');
+      setDescricao(item.descricao || '');
+    } else if (tipoEntidade === 'subcategoria') {
+      setDescricao(item.descricao || '');
+      setIdCategoria(item.idCategoria ? Number(item.idCategoria) : '');
+    } else if (tipoEntidade === 'medida') {
+      setDescricao(item.descricao || '');
+      setLargura(item.largura !== undefined && item.largura !== null ? Number(item.largura) : '');
+      setAltura(item.altura !== undefined && item.altura !== null ? Number(item.altura) : '');
+    } else if (tipoEntidade === 'milimetro') {
+      setEspessura(item.espessura !== undefined && item.espessura !== null ? Number(item.espessura) : '');
+      setDescricao(item.descricao || '');
+    } else {
+      setDescricao(item.descricao || '');
+    }
   };
 
   const carregarDados = async () => {
@@ -118,6 +145,7 @@ export const ProdutoApoioDrawer: React.FC<ProdutoApoioDrawerProps> = ({
       if (tipoEntidade === 'tipo_produto') {
         if (!nome.trim()) return;
         await produtoApoioService.salvarTipoProduto({
+          id: editingId || undefined,
           nome: nome.trim(),
           descricao: descricao.trim(),
           status: 'ATIVO',
@@ -125,12 +153,14 @@ export const ProdutoApoioDrawer: React.FC<ProdutoApoioDrawerProps> = ({
       } else if (tipoEntidade === 'categoria') {
         if (!descricao.trim()) return;
         await produtoApoioService.salvarCategoria({
+          id: editingId || undefined,
           descricao: descricao.trim(),
           status: 'ATIVO',
         });
       } else if (tipoEntidade === 'subcategoria') {
         if (!descricao.trim()) return;
         await produtoApoioService.salvarSubCategoria({
+          id: editingId || undefined,
           descricao: descricao.trim(),
           idCategoria: idCategoria ? Number(idCategoria) : undefined,
           status: 'ATIVO',
@@ -138,24 +168,28 @@ export const ProdutoApoioDrawer: React.FC<ProdutoApoioDrawerProps> = ({
       } else if (tipoEntidade === 'classe') {
         if (!descricao.trim()) return;
         await produtoApoioService.salvarClasse({
+          id: editingId || undefined,
           descricao: descricao.trim(),
           status: 'ATIVO',
         });
       } else if (tipoEntidade === 'modelo') {
         if (!descricao.trim()) return;
         await produtoApoioService.salvarModelo({
+          id: editingId || undefined,
           descricao: descricao.trim(),
           status: 'ATIVO',
         });
       } else if (tipoEntidade === 'marca') {
         if (!descricao.trim()) return;
         await produtoApoioService.salvarMarca({
+          id: editingId || undefined,
           descricao: descricao.trim(),
           status: 'ATIVO',
         });
       } else if (tipoEntidade === 'unidade_medida') {
         if (!sigla.trim() || !descricao.trim()) return;
         await produtoApoioService.salvarUnidadeMedida({
+          id: editingId || undefined,
           sigla: sigla.trim().toUpperCase(),
           descricao: descricao.trim(),
           status: 'ATIVO',
@@ -163,6 +197,7 @@ export const ProdutoApoioDrawer: React.FC<ProdutoApoioDrawerProps> = ({
       } else if (tipoEntidade === 'medida') {
         if (!descricao.trim()) return;
         await produtoApoioService.salvarMedida({
+          id: editingId || undefined,
           descricao: descricao.trim(),
           largura: largura ? Number(largura) : undefined,
           altura: altura ? Number(altura) : undefined,
@@ -171,6 +206,7 @@ export const ProdutoApoioDrawer: React.FC<ProdutoApoioDrawerProps> = ({
       } else if (tipoEntidade === 'milimetro') {
         if (!espessura) return;
         await produtoApoioService.salvarMilimetro({
+          id: editingId || undefined,
           espessura: Number(espessura),
           descricao: descricao.trim() || `${espessura}mm`,
           status: 'ATIVO',
@@ -295,10 +331,18 @@ export const ProdutoApoioDrawer: React.FC<ProdutoApoioDrawerProps> = ({
       }
     >
       <div className={styles.container}>
-        {/* Formulário de Inclusão Rápida */}
+        {/* Formulário de Inclusão Rápida / Edição */}
         <form onSubmit={handleSalvar} className={styles.addFormCard}>
-          <h3 className={styles.addFormTitle}>
-            <Plus size={16} /> Novo Registro
+          <h3 className={`${styles.addFormTitle} ${editingId ? styles.addFormTitleEditing : ''}`}>
+            {editingId ? (
+              <>
+                <Edit2 size={16} /> Editando Registro #{editingId}
+              </>
+            ) : (
+              <>
+                <Plus size={16} /> Novo Registro
+              </>
+            )}
           </h3>
 
           <div className={styles.formGrid}>
@@ -460,10 +504,28 @@ export const ProdutoApoioDrawer: React.FC<ProdutoApoioDrawerProps> = ({
             )}
           </div>
 
-          <button type="submit" className={styles.btnAdd} disabled={saving}>
-            {saving ? <Loader2 size={16} className="spin" /> : <Plus size={16} />}
-            Salvar Registro
-          </button>
+          <div className={styles.formActions}>
+            {editingId && (
+              <button
+                type="button"
+                className={styles.btnCancelEdit}
+                onClick={limparFormulario}
+                disabled={saving}
+              >
+                Cancelar Edição
+              </button>
+            )}
+            <button type="submit" className={styles.btnAdd} disabled={saving}>
+              {saving ? (
+                <Loader2 size={16} className="spin" />
+              ) : editingId ? (
+                <Check size={16} />
+              ) : (
+                <Plus size={16} />
+              )}
+              {editingId ? 'Salvar Alterações' : 'Salvar Registro'}
+            </button>
+          </div>
         </form>
 
         {/* Lista de Registros Cadastrados */}
@@ -482,25 +544,37 @@ export const ProdutoApoioDrawer: React.FC<ProdutoApoioDrawerProps> = ({
         ) : (
           <div className={styles.itemsList}>
             {items.map((item: any) => (
-              <div key={item.id} className={styles.itemCard}>
+              <div
+                key={item.id}
+                className={`${styles.itemCard} ${editingId === item.id ? styles.itemCardEditing : ''}`}
+              >
                 <div className={styles.itemInfo}>
                   <div className={styles.itemMain}>
                     {item.sigla && <span className={styles.tagSigla}>{item.sigla}</span>}
                     {item.nome || item.descricao}
                   </div>
-                  {(item.nomeCategoria || (item.espessura !== undefined && item.espessura !== null)) && (
+                  {(item.nomeCategoria || (item.espessura !== undefined && item.espessura !== null) || (item.largura && item.altura)) && (
                     <div className={styles.itemSub}>
                       {item.nomeCategoria && `Categoria: ${item.nomeCategoria}`}
-                      {item.espessura !== undefined && `Espessura: ${item.espessura}mm`}
+                      {item.espessura !== undefined && item.espessura !== null && `Espessura: ${item.espessura}mm`}
+                      {item.largura && item.altura && `Dimensões: ${item.largura} x ${item.altura} mm`}
                     </div>
                   )}
                 </div>
                 <div className={styles.itemActions}>
                   <button
                     type="button"
+                    className={styles.btnEdit}
+                    onClick={() => handleEditar(item)}
+                    title="Editar registro"
+                  >
+                    <Edit2 size={15} />
+                  </button>
+                  <button
+                    type="button"
                     className={styles.btnDelete}
                     onClick={() => handleExcluir(item.id)}
-                    title="Excluir item"
+                    title="Excluir registro"
                   >
                     <Trash2 size={15} />
                   </button>

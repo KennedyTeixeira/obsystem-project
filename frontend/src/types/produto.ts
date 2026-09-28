@@ -1,5 +1,5 @@
 export type ProdutoStatus = 'ATIVO' | 'INATIVO';
-export type ProdutoTipo = 'PRODUTO' | 'SERVICO' | 'INSUMO';
+export type ProdutoTipo = 'PRODUTO' | 'SERVICO' | 'INSUMO' | string;
 export type ProdutoEstoque = 'SIM' | 'NAO';
 
 export interface ProdutoDTO {
@@ -17,6 +17,7 @@ export interface ProdutoDTO {
   unidadeMedida?: string;
   categoria?: string;
   subcategoria?: string;
+  classe?: string;
   modelo?: string;
   milimetro?: number;
   medida?: number;
