@@ -44,3 +44,10 @@ Sistema Integrado de Gestão Empresarial (ERP) voltado ao setor vidreiro e indus
 - **Slide-Over Drawers:** Painéis laterais deslizantes (direita para esquerda) com CSS puro para gerenciamento dos cadastros auxiliares sem sair da tela principal.
 - **Chips Interativos:** Seleção ergonômica com badges clicáveis para relacionamentos múltiplos (N:N).
 - **Bottom-Sheet Drawer:** Painel deslizante inferior (baixo para cima) para ações em lote e reajuste coletivo de preços.
+
+<img width="1916" height="943" alt="image" src="https://github.com/user-attachments/assets/68d76a5b-a9c2-4ad3-8c7f-36aa03fc270b" />
+<img width="1917" height="943" alt="image" src="https://github.com/user-attachments/assets/10acecdc-6909-459d-aacc-db5bed2afaea" />
+<img width="1912" height="945" alt="image" src="https://github.com/user-attachments/assets/78d7dea3-755d-48c1-a619-46ee2d4e80ac" />
+
+
+
