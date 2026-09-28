@@ -189,4 +189,10 @@ public class ProdutoApoioController {
         service.excluirMedida(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/manutencao/limpar-transacionais")
+    public ResponseEntity<String> limparDadosTransacionais() {
+        service.limparDadosTransacionais();
+        return ResponseEntity.ok("Dados transacionais limpos com sucesso. Ferramentas de apoio preservadas.");
+    }
 }

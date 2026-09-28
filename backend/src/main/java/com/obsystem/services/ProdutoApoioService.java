@@ -354,4 +354,30 @@ public class ProdutoApoioService {
     public void excluirMedida(Integer id) {
         medidaRepository.deleteById(id);
     }
+
+    @Transactional
+    public void limparDadosTransacionais() {
+        String[] tabelas = {
+            "obs_item_venda",
+            "obs_venda",
+            "obs_item_compra",
+            "obs_compra",
+            "obs_titulo",
+            "obs_produto",
+            "obs_cliente",
+            "obs_fornecedor",
+            "obs_contato",
+            "obs_endereco",
+            "obs_fisica",
+            "obs_juridica",
+            "obs_pessoa"
+        };
+        for (String tab : tabelas) {
+            try {
+                jdbcTemplate.execute("TRUNCATE TABLE " + tab + " RESTART IDENTITY CASCADE");
+            } catch (Exception e) {
+                // Se tabela não existir ou outro detalhe, ignora
+            }
+        }
+    }
 }
