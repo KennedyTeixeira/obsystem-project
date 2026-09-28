@@ -1,6 +1,8 @@
 package com.obsystem.entities;
 
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 import com.obsystem.entities.enums.ProdutoStatus;
 
@@ -8,11 +10,13 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.Table;
 
 @Entity
@@ -24,9 +28,13 @@ public class SubCategoria {
     @Column(name = "id_sub_categoria")
     private Integer id;
 
-    @ManyToOne
-    @JoinColumn(name = "id_categoria")
-    private Categoria categoria;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+        name = "obs_categoria_sub_categoria",
+        joinColumns = @JoinColumn(name = "id_sub_categoria"),
+        inverseJoinColumns = @JoinColumn(name = "id_categoria")
+    )
+    private Set<Categoria> categorias = new HashSet<>();
 
     @Column(name = "ds_sub_categoria", length = 50, nullable = false)
     private String descricao;
@@ -38,10 +46,17 @@ public class SubCategoria {
     public SubCategoria() {
     }
 
-    public SubCategoria(Categoria categoria, String descricao, ProdutoStatus status) {
-        this.categoria = categoria;
+    public SubCategoria(String descricao, ProdutoStatus status) {
         this.descricao = descricao;
         this.status = status != null ? status : ProdutoStatus.ATIVO;
+    }
+
+    public SubCategoria(Categoria categoria, String descricao, ProdutoStatus status) {
+        this.descricao = descricao;
+        this.status = status != null ? status : ProdutoStatus.ATIVO;
+        if (categoria != null) {
+            this.categorias.add(categoria);
+        }
     }
 
     public Integer getId() {
@@ -52,12 +67,27 @@ public class SubCategoria {
         this.id = id;
     }
 
+    public Set<Categoria> getCategorias() {
+        return categorias;
+    }
+
+    public void setCategorias(Set<Categoria> categorias) {
+        this.categorias = categorias;
+    }
+
+    // Helper compatibility method
     public Categoria getCategoria() {
-        return categoria;
+        return (categorias != null && !categorias.isEmpty()) ? categorias.iterator().next() : null;
     }
 
     public void setCategoria(Categoria categoria) {
-        this.categoria = categoria;
+        if (this.categorias == null) {
+            this.categorias = new HashSet<>();
+        }
+        this.categorias.clear();
+        if (categoria != null) {
+            this.categorias.add(categoria);
+        }
     }
 
     public String getDescricao() {

@@ -23,7 +23,9 @@ export interface CategoriaDTO {
 export interface SubCategoriaDTO {
   id?: number;
   idCategoria?: number;
+  idsCategorias?: number[];
   nomeCategoria?: string;
+  nomesCategorias?: string[];
   descricao: string;
   status?: ProdutoStatus;
 }

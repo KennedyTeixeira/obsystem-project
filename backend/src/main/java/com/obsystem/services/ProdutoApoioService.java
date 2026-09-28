@@ -55,6 +55,28 @@ public class ProdutoApoioService {
         } catch (Exception e) {
             // Ignora se não existir
         }
+
+        try {
+            // Cria tabela associativa para ManyToMany se ainda não existir
+            jdbcTemplate.execute(
+                "CREATE TABLE IF NOT EXISTS obs_categoria_sub_categoria (" +
+                "    id_sub_categoria INT4 NOT NULL, " +
+                "    id_categoria INT4 NOT NULL, " +
+                "    CONSTRAINT pk_categoria_sub_categoria PRIMARY KEY (id_sub_categoria, id_categoria)" +
+                ")"
+            );
+
+            // Migra dados existentes de obs_sub_categoria.id_categoria
+            jdbcTemplate.execute(
+                "INSERT INTO obs_categoria_sub_categoria (id_sub_categoria, id_categoria) " +
+                "SELECT id_sub_categoria, id_categoria " +
+                "FROM obs_sub_categoria " +
+                "WHERE id_categoria IS NOT NULL " +
+                "ON CONFLICT DO NOTHING"
+            );
+        } catch (Exception e) {
+            // Ignora se já estiver ajustado
+        }
     }
 
     @Autowired
@@ -164,6 +186,11 @@ public class ProdutoApoioService {
 
     @Transactional
     public void excluirCategoria(Integer id) {
+        try {
+            jdbcTemplate.update("DELETE FROM obs_categoria_sub_categoria WHERE id_categoria = ?", id);
+        } catch (Exception e) {
+            // Ignora se não existir
+        }
         categoriaRepository.deleteById(id);
     }
 
@@ -171,8 +198,8 @@ public class ProdutoApoioService {
     @Transactional(readOnly = true)
     public List<SubCategoriaDTO> listarSubCategorias(Integer idCategoria) {
         List<SubCategoria> lista = (idCategoria != null)
-                ? subCategoriaRepository.findByCategoriaIdOrderByDescricaoAsc(idCategoria)
-                : subCategoriaRepository.findAllByOrderByDescricaoAsc();
+                ? subCategoriaRepository.findByCategoriaId(idCategoria)
+                : subCategoriaRepository.findAllWithCategorias();
         return lista.stream().map(SubCategoriaDTO::new).collect(Collectors.toList());
     }
 
@@ -183,17 +210,30 @@ public class ProdutoApoioService {
                 : new SubCategoria();
         entity.setDescricao(dto.getDescricao());
         entity.setStatus(dto.getStatus() != null ? dto.getStatus() : ProdutoStatus.ATIVO);
-        if (dto.getIdCategoria() != null) {
-            Categoria cat = categoriaRepository.findById(dto.getIdCategoria()).orElse(null);
-            entity.setCategoria(cat);
-        } else {
-            entity.setCategoria(null);
+
+        java.util.Set<Integer> idsCats = new java.util.HashSet<>();
+        if (dto.getIdsCategorias() != null && !dto.getIdsCategorias().isEmpty()) {
+            idsCats.addAll(dto.getIdsCategorias());
+        } else if (dto.getIdCategoria() != null) {
+            idsCats.add(dto.getIdCategoria());
         }
+
+        entity.getCategorias().clear();
+        if (!idsCats.isEmpty()) {
+            List<Categoria> cats = categoriaRepository.findAllById(idsCats);
+            entity.getCategorias().addAll(cats);
+        }
+
         return new SubCategoriaDTO(subCategoriaRepository.save(entity));
     }
 
     @Transactional
     public void excluirSubCategoria(Integer id) {
+        try {
+            jdbcTemplate.update("DELETE FROM obs_categoria_sub_categoria WHERE id_sub_categoria = ?", id);
+        } catch (Exception e) {
+            // Ignora se não existir
+        }
         subCategoriaRepository.deleteById(id);
     }
 

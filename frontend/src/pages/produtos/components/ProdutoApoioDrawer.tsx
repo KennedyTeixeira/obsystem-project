@@ -46,7 +46,7 @@ export const ProdutoApoioDrawer: React.FC<ProdutoApoioDrawerProps> = ({
   const [descricao, setDescricao] = useState('');
   const [nome, setNome] = useState('');
   const [sigla, setSigla] = useState('');
-  const [idCategoria, setIdCategoria] = useState<number | ''>('');
+  const [selectedCategoriaIds, setSelectedCategoriaIds] = useState<number[]>([]);
   const [espessura, setEspessura] = useState<number | ''>('');
   const [largura, setLargura] = useState<number | ''>('');
   const [altura, setAltura] = useState<number | ''>('');
@@ -56,7 +56,7 @@ export const ProdutoApoioDrawer: React.FC<ProdutoApoioDrawerProps> = ({
     setDescricao('');
     setNome('');
     setSigla('');
-    setIdCategoria('');
+    setSelectedCategoriaIds([]);
     setEspessura('');
     setLargura('');
     setAltura('');
@@ -72,7 +72,13 @@ export const ProdutoApoioDrawer: React.FC<ProdutoApoioDrawerProps> = ({
       setDescricao(item.descricao || '');
     } else if (tipoEntidade === 'subcategoria') {
       setDescricao(item.descricao || '');
-      setIdCategoria(item.idCategoria ? Number(item.idCategoria) : '');
+      if (item.idsCategorias && Array.isArray(item.idsCategorias) && item.idsCategorias.length > 0) {
+        setSelectedCategoriaIds(item.idsCategorias);
+      } else if (item.idCategoria) {
+        setSelectedCategoriaIds([Number(item.idCategoria)]);
+      } else {
+        setSelectedCategoriaIds([]);
+      }
     } else if (tipoEntidade === 'medida') {
       setDescricao(item.descricao || '');
       setLargura(item.largura !== undefined && item.largura !== null ? Number(item.largura) : '');
@@ -162,7 +168,8 @@ export const ProdutoApoioDrawer: React.FC<ProdutoApoioDrawerProps> = ({
         await produtoApoioService.salvarSubCategoria({
           id: editingId || undefined,
           descricao: descricao.trim(),
-          idCategoria: idCategoria ? Number(idCategoria) : undefined,
+          idsCategorias: selectedCategoriaIds,
+          idCategoria: selectedCategoriaIds.length > 0 ? selectedCategoriaIds[0] : undefined,
           status: 'ATIVO',
         });
       } else if (tipoEntidade === 'classe') {
@@ -401,20 +408,34 @@ export const ProdutoApoioDrawer: React.FC<ProdutoApoioDrawerProps> = ({
             )}
 
             {tipoEntidade === 'subcategoria' && (
-              <div className={styles.formGroup}>
-                <label className={styles.label}>Categoria Vinculada</label>
-                <select
-                  className={styles.select}
-                  value={idCategoria}
-                  onChange={(e) => setIdCategoria(e.target.value ? Number(e.target.value) : '')}
-                >
-                  <option value="">Selecione a categoria...</option>
-                  {categoriasList.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.descricao}
-                    </option>
-                  ))}
-                </select>
+              <div className={styles.formGroup} style={{ gridColumn: '1 / -1' }}>
+                <label className={styles.label}>
+                  Categorias Vinculadas ({selectedCategoriaIds.length}{' '}
+                  {selectedCategoriaIds.length === 1 ? 'selecionada' : 'selecionadas'} - clique para alternar)
+                </label>
+                <div className={styles.categoriaChipsGrid}>
+                  {categoriasList.map((c) => {
+                    const isSelected = c.id !== undefined && selectedCategoriaIds.includes(c.id);
+                    return (
+                      <button
+                        key={c.id}
+                        type="button"
+                        className={`${styles.categoriaChip} ${isSelected ? styles.categoriaChipActive : ''}`}
+                        onClick={() => {
+                          if (c.id === undefined) return;
+                          if (isSelected) {
+                            setSelectedCategoriaIds(selectedCategoriaIds.filter((id) => id !== c.id));
+                          } else {
+                            setSelectedCategoriaIds([...selectedCategoriaIds, c.id]);
+                          }
+                        }}
+                      >
+                        <span>{c.descricao}</span>
+                        {isSelected && <Check size={13} />}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             )}
 
@@ -553,9 +574,16 @@ export const ProdutoApoioDrawer: React.FC<ProdutoApoioDrawerProps> = ({
                     {item.sigla && <span className={styles.tagSigla}>{item.sigla}</span>}
                     {item.nome || item.descricao}
                   </div>
-                  {(item.nomeCategoria || (item.espessura !== undefined && item.espessura !== null) || (item.largura && item.altura)) && (
+                  {((item.nomesCategorias && item.nomesCategorias.length > 0) ||
+                    item.nomeCategoria ||
+                    (item.espessura !== undefined && item.espessura !== null) ||
+                    (item.largura && item.altura)) && (
                     <div className={styles.itemSub}>
-                      {item.nomeCategoria && `Categoria: ${item.nomeCategoria}`}
+                      {item.nomesCategorias && item.nomesCategorias.length > 0
+                        ? `Categorias: ${item.nomesCategorias.join(', ')}`
+                        : item.nomeCategoria
+                        ? `Categoria: ${item.nomeCategoria}`
+                        : null}
                       {item.espessura !== undefined && item.espessura !== null && `Espessura: ${item.espessura}mm`}
                       {item.largura && item.altura && `Dimensões: ${item.largura} x ${item.altura} mm`}
                     </div>

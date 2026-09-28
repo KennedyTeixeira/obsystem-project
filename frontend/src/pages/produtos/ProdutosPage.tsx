@@ -37,7 +37,6 @@ export const ProdutosPage: React.FC = () => {
   const [categoriaFilter, setCategoriaFilter] = useState('');
   const [subcategoriaFilter, setSubcategoriaFilter] = useState('');
   const [classeFilter, setClasseFilter] = useState('');
-  const [milimetroFilter, setMilimetroFilter] = useState<number | ''>('');
 
   // Drawers de Apoio e Ações (Estilo Bling ERP)
   const [drawerTipo, setDrawerTipo] = useState<TipoEntidadeApoio | null>(null);
@@ -79,7 +78,6 @@ export const ProdutosPage: React.FC = () => {
   const categoriaFilterId = useId();
   const subcategoriaFilterId = useId();
   const classeFilterId = useId();
-  const milimetroFilterId = useId();
   const formCodigoId = useId();
   const formNomeId = useId();
   const formTipoProdutoId = useId();
@@ -141,7 +139,9 @@ export const ProdutosPage: React.FC = () => {
     if (!catEncontrada) return catalogo.subcategorias;
     const filtradas = catalogo.subcategorias.filter(
       (s) =>
+        (s.idsCategorias && catEncontrada.id ? s.idsCategorias.includes(catEncontrada.id) : false) ||
         s.idCategoria === catEncontrada.id ||
+        (s.nomesCategorias && s.nomesCategorias.some((nc) => nc.toLowerCase() === formData.categoria?.toLowerCase())) ||
         s.nomeCategoria?.toLowerCase() === formData.categoria?.toLowerCase()
     );
     return filtradas.length > 0 ? filtradas : catalogo.subcategorias;
@@ -171,27 +171,6 @@ export const ProdutosPage: React.FC = () => {
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [catalogo, produtos]);
 
-  // Lista combinada de milímetros (catálogo + produtos)
-  const milimetrosFiltro = useMemo(() => {
-    const map = new Map<number, string>();
-    catalogo?.milimetros.forEach((m) => {
-      if (m.espessura !== undefined && m.espessura !== null) {
-        map.set(Number(m.espessura), m.descricao || `${m.espessura}mm`);
-      }
-    });
-    produtos.forEach((p) => {
-      if (p.milimetro !== undefined && p.milimetro !== null) {
-        const val = Number(p.milimetro);
-        if (!map.has(val)) {
-          map.set(val, `${val}mm`);
-        }
-      }
-    });
-    return Array.from(map.entries())
-      .map(([espessura, descricao]) => ({ espessura, descricao }))
-      .sort((a, b) => a.espessura - b.espessura);
-  }, [catalogo, produtos]);
-
   // Subcategorias disponíveis para a barra de filtros
   const subcategoriasFiltro = useMemo(() => {
     if (!catalogo) return [];
@@ -212,12 +191,14 @@ export const ProdutosPage: React.FC = () => {
     if (!catEncontrada) return catalogo.subcategorias;
     return catalogo.subcategorias.filter(
       (s) =>
+        (s.idsCategorias && catEncontrada.id ? s.idsCategorias.includes(catEncontrada.id) : false) ||
         s.idCategoria === catEncontrada.id ||
+        (s.nomesCategorias && s.nomesCategorias.some((nc) => nc.toLowerCase() === categoriaFilter.toLowerCase())) ||
         s.nomeCategoria?.toLowerCase() === categoriaFilter.toLowerCase()
     );
   }, [catalogo, categoriaFilter, produtos]);
 
-  // Produtos filtrados por categoria, subcategoria, classe e milímetro
+  // Produtos filtrados por categoria, subcategoria e classe
   const produtosFiltrados = useMemo(() => {
     return produtos.filter((p) => {
       if (categoriaFilter && p.categoria?.toLowerCase() !== categoriaFilter.toLowerCase()) {
@@ -229,15 +210,12 @@ export const ProdutosPage: React.FC = () => {
       if (classeFilter && p.classe?.toLowerCase() !== classeFilter.toLowerCase()) {
         return false;
       }
-      if (milimetroFilter !== '' && p.milimetro !== Number(milimetroFilter)) {
-        return false;
-      }
       return true;
     });
-  }, [produtos, categoriaFilter, subcategoriaFilter, classeFilter, milimetroFilter]);
+  }, [produtos, categoriaFilter, subcategoriaFilter, classeFilter]);
 
   const hasActiveFilters = Boolean(
-    categoriaFilter || subcategoriaFilter || classeFilter || milimetroFilter !== '' || statusFilter || search
+    categoriaFilter || subcategoriaFilter || classeFilter || statusFilter || search
   );
 
   const limparFiltros = () => {
@@ -246,7 +224,6 @@ export const ProdutosPage: React.FC = () => {
     setCategoriaFilter('');
     setSubcategoriaFilter('');
     setClasseFilter('');
-    setMilimetroFilter('');
   };
 
   const abrirModalNovo = () => {
@@ -453,25 +430,6 @@ export const ProdutosPage: React.FC = () => {
                 </select>
               </div>
 
-              {/* Filtro: Milímetro */}
-              <div className={styles.filterItem}>
-                <label htmlFor={milimetroFilterId}>Milímetro:</label>
-                <select
-                  id={milimetroFilterId}
-                  value={milimetroFilter}
-                  onChange={(e) =>
-                    setMilimetroFilter(e.target.value ? Number(e.target.value) : '')
-                  }
-                >
-                  <option value="">Todos</option>
-                  {milimetrosFiltro.map((mi) => (
-                    <option key={mi.espessura} value={mi.espessura}>
-                      {mi.descricao}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
               {/* Filtro: Status */}
               <div className={styles.filterItem}>
                 <label htmlFor={statusFilterId}>Status:</label>
@@ -537,9 +495,7 @@ export const ProdutosPage: React.FC = () => {
                       <th>Categoria</th>
                       <th>Subcategoria</th>
                       <th>Classe</th>
-                      <th>Milímetro</th>
-                      <th>Unidade Medida</th>
-                      <th>Estoque</th>
+                      <th>Unidade</th>
                       <th>Preço Venda</th>
                       <th>Ações</th>
                     </tr>
@@ -581,23 +537,9 @@ export const ProdutosPage: React.FC = () => {
                           )}
                         </td>
 
-                        {/* Milímetro */}
-                        <td>
-                          {p.milimetro !== undefined && p.milimetro !== null ? (
-                            <span className={styles.badgeMilimetro}>{p.milimetro}mm</span>
-                          ) : (
-                            <span style={{ color: 'var(--text-subtle)' }}>-</span>
-                          )}
-                        </td>
-
-                        {/* Unidade Medida */}
+                        {/* Unidade */}
                         <td>
                           <span>{p.unidadeMedida || 'UN'}</span>
-                        </td>
-
-                        {/* Estoque */}
-                        <td>
-                          <strong>{p.estoqueAtual ?? 0}</strong>
                         </td>
 
                         {/* Preço Venda */}
