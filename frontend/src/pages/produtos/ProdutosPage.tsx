@@ -34,6 +34,10 @@ export const ProdutosPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ProdutoStatus | ''>('');
+  const [categoriaFilter, setCategoriaFilter] = useState('');
+  const [subcategoriaFilter, setSubcategoriaFilter] = useState('');
+  const [classeFilter, setClasseFilter] = useState('');
+  const [milimetroFilter, setMilimetroFilter] = useState<number | ''>('');
 
   // Drawers de Apoio e Ações (Estilo Bling ERP)
   const [drawerTipo, setDrawerTipo] = useState<TipoEntidadeApoio | null>(null);
@@ -72,6 +76,10 @@ export const ProdutosPage: React.FC = () => {
 
   const searchInputId = useId();
   const statusFilterId = useId();
+  const categoriaFilterId = useId();
+  const subcategoriaFilterId = useId();
+  const classeFilterId = useId();
+  const milimetroFilterId = useId();
   const formCodigoId = useId();
   const formNomeId = useId();
   const formTipoProdutoId = useId();
@@ -138,6 +146,108 @@ export const ProdutosPage: React.FC = () => {
     );
     return filtradas.length > 0 ? filtradas : catalogo.subcategorias;
   }, [catalogo, formData.categoria]);
+
+  // Lista combinada de categorias (catálogo + produtos)
+  const categoriasFiltro = useMemo(() => {
+    const set = new Set<string>();
+    catalogo?.categorias.forEach((c) => {
+      if (c.descricao?.trim()) set.add(c.descricao.trim());
+    });
+    produtos.forEach((p) => {
+      if (p.categoria?.trim()) set.add(p.categoria.trim());
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [catalogo, produtos]);
+
+  // Lista combinada de classes (catálogo + produtos)
+  const classesFiltro = useMemo(() => {
+    const set = new Set<string>();
+    catalogo?.classes.forEach((cl) => {
+      if (cl.descricao?.trim()) set.add(cl.descricao.trim());
+    });
+    produtos.forEach((p) => {
+      if (p.classe?.trim()) set.add(p.classe.trim());
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [catalogo, produtos]);
+
+  // Lista combinada de milímetros (catálogo + produtos)
+  const milimetrosFiltro = useMemo(() => {
+    const map = new Map<number, string>();
+    catalogo?.milimetros.forEach((m) => {
+      if (m.espessura !== undefined && m.espessura !== null) {
+        map.set(Number(m.espessura), m.descricao || `${m.espessura}mm`);
+      }
+    });
+    produtos.forEach((p) => {
+      if (p.milimetro !== undefined && p.milimetro !== null) {
+        const val = Number(p.milimetro);
+        if (!map.has(val)) {
+          map.set(val, `${val}mm`);
+        }
+      }
+    });
+    return Array.from(map.entries())
+      .map(([espessura, descricao]) => ({ espessura, descricao }))
+      .sort((a, b) => a.espessura - b.espessura);
+  }, [catalogo, produtos]);
+
+  // Subcategorias disponíveis para a barra de filtros
+  const subcategoriasFiltro = useMemo(() => {
+    if (!catalogo) return [];
+    if (!categoriaFilter) {
+      // Se nenhuma categoria selecionada, reúne todas do catálogo e produtos
+      const map = new Map<string, { id?: number; descricao: string }>();
+      catalogo.subcategorias.forEach((s) => map.set(s.descricao.toLowerCase(), s));
+      produtos.forEach((p) => {
+        if (p.subcategoria?.trim() && !map.has(p.subcategoria.toLowerCase())) {
+          map.set(p.subcategoria.toLowerCase(), { descricao: p.subcategoria.trim() });
+        }
+      });
+      return Array.from(map.values());
+    }
+    const catEncontrada = catalogo.categorias.find(
+      (c) => c.descricao.toLowerCase() === categoriaFilter.toLowerCase()
+    );
+    if (!catEncontrada) return catalogo.subcategorias;
+    return catalogo.subcategorias.filter(
+      (s) =>
+        s.idCategoria === catEncontrada.id ||
+        s.nomeCategoria?.toLowerCase() === categoriaFilter.toLowerCase()
+    );
+  }, [catalogo, categoriaFilter, produtos]);
+
+  // Produtos filtrados por categoria, subcategoria, classe e milímetro
+  const produtosFiltrados = useMemo(() => {
+    return produtos.filter((p) => {
+      if (categoriaFilter && p.categoria?.toLowerCase() !== categoriaFilter.toLowerCase()) {
+        return false;
+      }
+      if (subcategoriaFilter && p.subcategoria?.toLowerCase() !== subcategoriaFilter.toLowerCase()) {
+        return false;
+      }
+      if (classeFilter && p.classe?.toLowerCase() !== classeFilter.toLowerCase()) {
+        return false;
+      }
+      if (milimetroFilter !== '' && p.milimetro !== Number(milimetroFilter)) {
+        return false;
+      }
+      return true;
+    });
+  }, [produtos, categoriaFilter, subcategoriaFilter, classeFilter, milimetroFilter]);
+
+  const hasActiveFilters = Boolean(
+    categoriaFilter || subcategoriaFilter || classeFilter || milimetroFilter !== '' || statusFilter || search
+  );
+
+  const limparFiltros = () => {
+    setSearch('');
+    setStatusFilter('');
+    setCategoriaFilter('');
+    setSubcategoriaFilter('');
+    setClasseFilter('');
+    setMilimetroFilter('');
+  };
 
   const abrirModalNovo = () => {
     setEditingId(null);
@@ -273,145 +383,262 @@ export const ProdutosPage: React.FC = () => {
       <div className={styles.pageLayout}>
         <div className={styles.mainContent}>
           {/* Filtros */}
-      <div className={styles.filterCard}>
-        <div className={styles.searchBox}>
-          <Search size={18} color="var(--text-muted)" />
-          <label htmlFor={searchInputId} style={{ display: 'none' }}>Buscar por nome ou código (SKU)...</label>
-          <input
-            id={searchInputId}
-            type="text"
-            placeholder="Buscar por nome ou código (SKU)..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+          <div className={styles.filterCard}>
+            <div className={styles.searchBox}>
+              <Search size={18} color="var(--text-muted)" />
+              <label htmlFor={searchInputId} style={{ display: 'none' }}>
+                Buscar por nome ou código (SKU)...
+              </label>
+              <input
+                id={searchInputId}
+                type="text"
+                placeholder="Buscar por nome ou código (SKU)..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+
+            <div className={styles.filtersGroup}>
+              {/* Filtro: Categoria */}
+              <div className={styles.filterItem}>
+                <label htmlFor={categoriaFilterId}>Categoria:</label>
+                <select
+                  id={categoriaFilterId}
+                  value={categoriaFilter}
+                  onChange={(e) => {
+                    setCategoriaFilter(e.target.value);
+                    setSubcategoriaFilter('');
+                  }}
+                >
+                  <option value="">Todas</option>
+                  {categoriasFiltro.map((catNome) => (
+                    <option key={catNome} value={catNome}>
+                      {catNome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Filtro: Subcategoria */}
+              <div className={styles.filterItem}>
+                <label htmlFor={subcategoriaFilterId}>Subcategoria:</label>
+                <select
+                  id={subcategoriaFilterId}
+                  value={subcategoriaFilter}
+                  onChange={(e) => setSubcategoriaFilter(e.target.value)}
+                >
+                  <option value="">Todas</option>
+                  {subcategoriasFiltro.map((s, idx) => (
+                    <option key={s.id ?? idx} value={s.descricao}>
+                      {s.descricao}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Filtro: Classe */}
+              <div className={styles.filterItem}>
+                <label htmlFor={classeFilterId}>Classe:</label>
+                <select
+                  id={classeFilterId}
+                  value={classeFilter}
+                  onChange={(e) => setClasseFilter(e.target.value)}
+                >
+                  <option value="">Todas</option>
+                  {classesFiltro.map((classeNome) => (
+                    <option key={classeNome} value={classeNome}>
+                      {classeNome}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Filtro: Milímetro */}
+              <div className={styles.filterItem}>
+                <label htmlFor={milimetroFilterId}>Milímetro:</label>
+                <select
+                  id={milimetroFilterId}
+                  value={milimetroFilter}
+                  onChange={(e) =>
+                    setMilimetroFilter(e.target.value ? Number(e.target.value) : '')
+                  }
+                >
+                  <option value="">Todos</option>
+                  {milimetrosFiltro.map((mi) => (
+                    <option key={mi.espessura} value={mi.espessura}>
+                      {mi.descricao}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Filtro: Status */}
+              <div className={styles.filterItem}>
+                <label htmlFor={statusFilterId}>Status:</label>
+                <select
+                  id={statusFilterId}
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value as ProdutoStatus | '')}
+                >
+                  <option value="">Todos</option>
+                  <option value="ATIVO">Ativos</option>
+                  <option value="INATIVO">Inativos</option>
+                </select>
+              </div>
+
+              {/* Botão Limpar Filtros */}
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  className={styles.btnClearFilters}
+                  onClick={limparFiltros}
+                  title="Limpar todos os filtros"
+                >
+                  <X size={14} /> Limpar
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Tabela de Produtos */}
+          <div className={styles.tableCard}>
+            {loading ? (
+              <div className={styles.emptyState}>
+                <Loader2 size={36} className="spin" style={{ animation: 'spin 1s linear infinite' }} />
+                <p>Carregando catálogo do Supabase...</p>
+              </div>
+            ) : produtosFiltrados.length === 0 ? (
+              <div className={styles.emptyState}>
+                <Package size={48} style={{ color: 'var(--text-subtle)' }} />
+                <h3>Nenhum produto encontrado</h3>
+                <p>
+                  {hasActiveFilters
+                    ? 'Nenhum item corresponde aos filtros selecionados. Tente limpar os filtros.'
+                    : 'Clique no botão "+ Novo Produto" acima para cadastrar seu primeiro item.'}
+                </p>
+                {hasActiveFilters && (
+                  <button
+                    type="button"
+                    className={styles.btnClearFilters}
+                    onClick={limparFiltros}
+                    style={{ marginTop: '0.75rem' }}
+                  >
+                    <X size={14} /> Limpar filtros
+                  </button>
+                )}
+              </div>
+            ) : (
+              <div className={styles.tableResponsive}>
+                <table className={styles.table}>
+                  <thead>
+                    <tr>
+                      <th>Código</th>
+                      <th>Produto</th>
+                      <th>Categoria</th>
+                      <th>Subcategoria</th>
+                      <th>Classe</th>
+                      <th>Milímetro</th>
+                      <th>Unidade Medida</th>
+                      <th>Estoque</th>
+                      <th>Preço Venda</th>
+                      <th>Ações</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {produtosFiltrados.map((p) => (
+                      <tr key={p.id} style={p.statusProduto === 'INATIVO' ? { opacity: 0.6 } : undefined}>
+                        {/* Código */}
+                        <td>
+                          <span className={styles.skuBadge}>{p.codigoProduto}</span>
+                        </td>
+
+                        {/* Produto */}
+                        <td>
+                          <strong className={styles.productName}>{p.nomeProduto}</strong>
+                          {p.statusProduto === 'INATIVO' && (
+                            <span style={{ marginLeft: '6px', fontSize: '0.72rem', color: 'var(--text-muted)' }}>
+                              (Inativo)
+                            </span>
+                          )}
+                        </td>
+
+                        {/* Categoria */}
+                        <td>
+                          <span>{p.categoria || '-'}</span>
+                        </td>
+
+                        {/* Subcategoria */}
+                        <td>
+                          <span style={{ color: 'var(--text-muted)' }}>{p.subcategoria || '-'}</span>
+                        </td>
+
+                        {/* Classe */}
+                        <td>
+                          {p.classe ? (
+                            <span className={styles.badgeClasse}>{p.classe}</span>
+                          ) : (
+                            <span style={{ color: 'var(--text-subtle)' }}>-</span>
+                          )}
+                        </td>
+
+                        {/* Milímetro */}
+                        <td>
+                          {p.milimetro !== undefined && p.milimetro !== null ? (
+                            <span className={styles.badgeMilimetro}>{p.milimetro}mm</span>
+                          ) : (
+                            <span style={{ color: 'var(--text-subtle)' }}>-</span>
+                          )}
+                        </td>
+
+                        {/* Unidade Medida */}
+                        <td>
+                          <span>{p.unidadeMedida || 'UN'}</span>
+                        </td>
+
+                        {/* Estoque */}
+                        <td>
+                          <strong>{p.estoqueAtual ?? 0}</strong>
+                        </td>
+
+                        {/* Preço Venda */}
+                        <td>
+                          <strong style={{ color: 'var(--color-primary)' }}>{formatarMoeda(p.precoVenda)}</strong>
+                        </td>
+
+                        {/* Ações */}
+                        <td>
+                          <div className={styles.actionsCell}>
+                            <button
+                              type="button"
+                              onClick={() => abrirModalEditar(p)}
+                              className={styles.actionBtn}
+                              title="Editar Produto"
+                            >
+                              <Edit2 size={16} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => alternarStatus(p)}
+                              className={styles.actionBtn}
+                              title={p.statusProduto === 'ATIVO' ? 'Inativar Produto' : 'Ativar Produto'}
+                            >
+                              <Power
+                                size={16}
+                                color={p.statusProduto === 'ATIVO' ? 'var(--color-danger)' : 'var(--color-success)'}
+                              />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
         </div>
 
-        <div className={styles.statusFilter}>
-          <label htmlFor={statusFilterId} style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)' }}>Status:</label>
-          <select
-            id={statusFilterId}
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as ProdutoStatus | '')}
-          >
-            <option value="">Todos</option>
-            <option value="ATIVO">Somente Ativos</option>
-            <option value="INATIVO">Somente Inativos</option>
-          </select>
-        </div>
-      </div>
-
-      {/* Tabela de Produtos */}
-      <div className={styles.tableCard}>
-        {loading ? (
-          <div className={styles.emptyState}>
-            <Loader2 size={36} className="spin" style={{ animation: 'spin 1s linear infinite' }} />
-            <p>Carregando catálogo do Supabase...</p>
-          </div>
-        ) : produtos.length === 0 ? (
-          <div className={styles.emptyState}>
-            <Package size={48} style={{ color: 'var(--text-subtle)' }} />
-            <h3>Nenhum produto encontrado</h3>
-            <p>Clique no botão "+ Novo Produto" acima para cadastrar seu primeiro item.</p>
-          </div>
-        ) : (
-          <div className={styles.tableResponsive}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Código (SKU)</th>
-                  <th>Produto</th>
-                  <th>Categoria / Marca</th>
-                  <th>Preço Custo</th>
-                  <th>Preço Venda</th>
-                  <th>Margem</th>
-                  <th>Estoque</th>
-                  <th>Alerta</th>
-                  <th>Status</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {produtos.map((p) => (
-                  <tr key={p.id}>
-                    <td>
-                      <span className={styles.badgeSku}>{p.codigoProduto}</span>
-                    </td>
-                    <td>
-                      <strong>{p.nomeProduto}</strong>
-                    </td>
-                    <td>
-                      <span style={{ color: 'var(--text-muted)' }}>
-                        {p.categoria || 'Geral'}
-                        {p.subcategoria ? ` > ${p.subcategoria}` : ''}
-                        {p.marca ? ` • ${p.marca}` : ''}
-                        {p.milimetro ? ` • ${p.milimetro}mm` : ''}
-                      </span>
-                    </td>
-                    <td>{formatarMoeda(p.precoCusto)}</td>
-                    <td>
-                      <strong>{formatarMoeda(p.precoVenda)}</strong>
-                    </td>
-                    <td>
-                      <span className={styles.badgeMargin}>
-                        +{p.margemLucro ?? 0}%
-                      </span>
-                    </td>
-                    <td>
-                      <span>
-                        {p.estoqueAtual ?? 0} {p.unidadeMedida || 'UN'}
-                      </span>
-                    </td>
-                    <td>
-                      {p.alertaEstoque === 'CRITICO' && (
-                        <span className={styles.badgeAlertCritico}>⚠️ Baixo</span>
-                      )}
-                      {p.alertaEstoque === 'EXCESSIVO' && (
-                        <span className={styles.badgeAlertExcessivo}>📦 Excesso</span>
-                      )}
-                      {p.alertaEstoque === 'NORMAL' && (
-                        <span className={styles.badgeAlertNormal}>✓ Normal</span>
-                      )}
-                    </td>
-                    <td>
-                      {p.statusProduto === 'ATIVO' ? (
-                        <span className={styles.badgeStatusAtivo}>● Ativo</span>
-                      ) : (
-                        <span className={styles.badgeStatusInativo}>○ Inativo</span>
-                      )}
-                    </td>
-                    <td>
-                      <div className={styles.actionsCell}>
-                        <button
-                          type="button"
-                          onClick={() => abrirModalEditar(p)}
-                          className={styles.actionBtn}
-                          title="Editar Produto"
-                        >
-                          <Edit2 size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => alternarStatus(p)}
-                          className={styles.actionBtn}
-                          title={p.statusProduto === 'ATIVO' ? 'Inativar Produto' : 'Ativar Produto'}
-                        >
-                          <Power
-                            size={16}
-                            color={p.statusProduto === 'ATIVO' ? 'var(--color-danger)' : 'var(--color-success)'}
-                          />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-    </div>
-
-    {/* Menu Lateral à Direita (Bling ERP) */}
+        {/* Menu Lateral à Direita (Bling ERP) */}
     <aside
       className={`${styles.rightSidebar} ${
         sidebarCollapsed ? styles.rightSidebarCollapsed : ''
@@ -541,6 +768,14 @@ export const ProdutosPage: React.FC = () => {
                 <span className={styles.sidebarInfoLabel}>Total de Produtos:</span>
                 <span className={styles.sidebarInfoValue}>{produtos.length}</span>
               </div>
+              {hasActiveFilters && (
+                <div className={styles.sidebarInfoItem}>
+                  <span className={styles.sidebarInfoLabel}>Filtrados:</span>
+                  <span className={`${styles.sidebarInfoValue} ${styles.sidebarInfoHighlight}`}>
+                    {produtosFiltrados.length}
+                  </span>
+                </div>
+              )}
               <div className={styles.sidebarInfoItem}>
                 <span className={styles.sidebarInfoLabel}>Ativos:</span>
                 <span className={`${styles.sidebarInfoValue} ${styles.sidebarInfoHighlight}`}>
